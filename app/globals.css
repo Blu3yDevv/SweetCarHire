@@ -1,0 +1,616 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated design tokens to match Sweet Car Hire brand colors */
+  --background: #ffffff;
+  --foreground: #374151;
+  --card: #f9fafb;
+  --card-foreground: #4b5563;
+  --popover: #f0fdf4;
+  --popover-foreground: #374151;
+  --primary: #0d2b5f;
+  --primary-foreground: #ffffff;
+  --secondary: #f9fafb;
+  --secondary-foreground: #374151;
+  --muted: #e5e7eb;
+  --muted-foreground: #4b5563;
+  --accent: #e72c82;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #d1d5db;
+  --input: #f9fafb;
+  --ring: rgba(13, 43, 95, 0.5);
+  --chart-1: #f7d21c;
+  --chart-2: #e72c82;
+  --chart-3: #0d2b5f;
+  --chart-4: #ff6ea8;
+  --chart-5: #f472b6;
+  --radius: 0.75rem;
+  --sidebar: #f9fafb;
+  --sidebar-foreground: #374151;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #0d2b5f;
+  --sidebar-accent: #e72c82;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #d1d5db;
+  --sidebar-ring: rgba(13, 43, 95, 0.5);
+
+  /* Sweet Car Hire brand colors from logo */
+  --navy: #0d2b5f;
+  --magenta: #e72c82;
+  --pink: #ff6ea8;
+  --sunshine: #f7d21c;
+  --charcoal: #1f2937;
+  --white: #ffffff;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #0d2b5f;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #e72c82;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: rgba(13, 43, 95, 0.5);
+}
+
+@theme inline {
+  /* Updated font configuration for bubbly feel */
+  --font-poppins: var(--font-poppins);
+  --font-inter: var(--font-inter);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Custom brand color utilities */
+  --color-navy: var(--navy);
+  --color-magenta: var(--magenta);
+  --color-pink: var(--pink);
+  --color-sunshine: var(--sunshine);
+  --color-charcoal: var(--charcoal);
+  --color-white: var(--white);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Enhanced smooth scrolling with offset for fixed header */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px;
+  }
+
+  /* Added auto-scrolling animation for benefits carousel */
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Added infinite scroll animation for reviews carousel */
+  @keyframes scroll-infinite {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-33.333%);
+    }
+  }
+
+  /* Removed float animation to stop logo animations */
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(231, 44, 130, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(231, 44, 130, 0.6);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Added bubbly header animation keyframes */
+  @keyframes bubbleIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes bubbleOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+  }
+
+  /* Added smooth menu animations and enhanced mobile styles */
+  @keyframes menuSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes menuSlideOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-menu-in {
+    animation: menuSlideIn 0.3s ease-out forwards;
+  }
+
+  .animate-menu-out {
+    animation: menuSlideOut 0.2s ease-in forwards;
+  }
+
+  /* Enhanced dropdown styles */
+  .dropdown-enter {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+
+  .dropdown-enter-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: all 0.2s ease-out;
+  }
+
+  .dropdown-exit {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .dropdown-exit-active {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    transition: all 0.15s ease-in;
+  }
+
+  /* Added proper header animation classes that match the component usage */
+  .animate-bubble-in {
+    animation: bubbleIn 0.3s ease-out forwards;
+  }
+
+  .animate-bubble-out {
+    animation: bubbleOut 0.3s ease-in forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+}
+
+/* Enhanced custom utilities with brand colors and premium animations */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Updated gradients to use brand colors */
+.gradient-cta {
+  background: #e72c82;
+}
+
+.gradient-secondary {
+  background: #0d2b5f;
+}
+
+.gradient-sunshine {
+  background: #f7d21c;
+  color: #0d2b5f;
+}
+
+.beach-hero-bg {
+  background: linear-gradient(135deg, rgba(13, 43, 95, 0.4) 0%, rgba(231, 44, 130, 0.2) 100%), url("/beach-bg.jpg")
+    center / cover;
+  background-attachment: scroll; /* Changed from fixed to scroll for mobile compatibility */
+  background-size: cover; /* Ensure full image coverage */
+  background-position: center; /* Center the image properly */
+  background-repeat: no-repeat; /* Prevent image repetition */
+}
+
+.section-gradient {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #f8fafc 100%);
+}
+
+/* Enhanced hover effects with premium animations */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-hover:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(13, 43, 95, 0.15);
+}
+
+.bubble-shadow {
+  box-shadow: 0 10px 30px rgba(231, 44, 130, 0.2);
+}
+
+/* Added premium animation classes */
+.animate-scroll-left {
+  animation: scroll-left 8s linear infinite; /* Made carousel faster on mobile from 12s to 8s */
+}
+
+/* Desktop carousel speed remains the same */
+@media (min-width: 768px) {
+  .animate-scroll-left {
+    animation: scroll-left 12s linear infinite; /* Keep desktop speed at 12s */
+  }
+
+  .animate-scroll-infinite {
+    animation: scroll-infinite 30s linear infinite; /* Keep desktop reviews at 30s */
+  }
+}
+
+/* Added infinite scroll class for reviews with mobile optimization */
+.animate-scroll-infinite {
+  animation: scroll-infinite 30s linear infinite;
+}
+
+@media (max-width: 768px) {
+  .animate-scroll-infinite {
+    animation: scroll-infinite 10s linear infinite; /* Faster on mobile: 10s vs 30s on desktop */
+  }
+
+  .animate-scroll-left {
+    animation: scroll-left 8s linear infinite; /* Keep benefits carousel at 8s on mobile */
+  }
+}
+
+/* Desktop carousel speeds remain the same */
+@media (min-width: 769px) {
+  .animate-scroll-left {
+    animation: scroll-left 12s linear infinite; /* Keep desktop speed at 12s */
+  }
+
+  .animate-scroll-infinite {
+    animation: scroll-infinite 30s linear infinite; /* Keep desktop reviews at 30s */
+  }
+}
+
+/* Enhanced form styling for booking page */
+.booking-form-input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #9ca3af !important; /* Made borders more visible with stronger gray color */
+  background-color: #ffffff !important; /* Force white background */
+  color: #1f2937 !important; /* Force dark text color */
+}
+
+.booking-form-input:focus {
+  border-color: var(--magenta) !important; /* Force magenta border on focus */
+  box-shadow: 0 0 0 3px rgba(231, 44, 130, 0.1);
+  transform: translateY(-1px);
+  background-color: #ffffff !important; /* Keep white background on focus */
+}
+
+.booking-form-input:hover {
+  border-color: rgba(231, 44, 130, 0.5) !important; /* Made hover border more visible */
+}
+
+/* Enhanced accessibility and touch targets */
+@media (max-width: 640px) {
+  button,
+  .booking-form-input,
+  select {
+    min-height: 44px; /* iOS accessibility guidelines */
+  }
+
+  .car-card {
+    margin-bottom: 1rem;
+  }
+
+  .step-indicator {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Mobile optimizations for booking page */
+@media (max-width: 768px) {
+  .booking-form-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    border: 2px solid #6b7280 !important; /* Even stronger mobile borders for better visibility */
+    background-color: #ffffff !important; /* Force white background on mobile */
+  }
+
+  .car-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .mobile-menu-item {
+    padding: 1rem;
+    border-radius: 12px;
+    margin: 0.25rem 0;
+  }
+
+  .step-indicator {
+    font-size: 0.875rem;
+  }
+
+  .price-summary {
+    position: sticky;
+    top: 80px;
+    z-index: 20;
+  }
+
+  .beach-hero-bg {
+    background: linear-gradient(135deg, rgba(13, 43, 95, 0.6) 0%, rgba(231, 44, 130, 0.4) 100%), url("/beach-bg.jpg")
+      center / cover;
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh; /* Ensure full height coverage on mobile */
+  }
+}
+
+/* Price summary sticky animation */
+.price-summary {
+  transition: all 0.3s ease-out;
+}
+
+.price-summary.sticky {
+  box-shadow: 0 10px 30px rgba(13, 43, 95, 0.15);
+  transform: scale(1.02);
+}
+
+/* Enhanced mobile menu animations */
+.mobile-menu-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-item:hover {
+  transform: translateX(8px);
+  background: rgba(231, 44, 130, 0.1);
+}
+
+/* Improved hamburger menu animation */
+.hamburger-line {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger-open .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-open .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-open .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Enhanced dropdown animations */
+.dropdown-menu {
+  animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced blur overlay for stronger section transitions */
+.section-blur-overlay {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(248, 250, 252, 0.05) 20%,
+    rgba(248, 250, 252, 0.15) 50%,
+    rgba(248, 250, 252, 0.4) 80%,
+    #f8fafc 100%
+  );
+  height: 80px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 5;
+}
+
+/* Reduced section blur effects to minimal levels */
+.section-blur-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.1) 100%);
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+  z-index: 1;
+}
+
+.section-blur-enhanced::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to top, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.1) 100%);
+  backdrop-filter: blur(0.5px);
+  -webkit-backdrop-filter: blur(0.5px);
+  z-index: 1;
+}
+
+/* Enhanced section content positioning to ensure proper layering */
+.section-fade > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Enhanced blur effects at section ends */
+.section-blur::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.3) 100%);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 1;
+}
+
+.section-blur::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(to top, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.3) 100%);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 1;
+}
+
+/* Step indicator animations */
+.step-indicator {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-indicator.active {
+  transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(231, 44, 130, 0.3);
+}
+
+/* Car selection card animations */
+.car-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid transparent;
+}
+
+.car-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(13, 43, 95, 0.15);
+  border-color: rgba(231, 44, 130, 0.3);
+}
+
+.car-card.selected {
+  border-color: var(--magenta);
+  background: rgba(231, 44, 130, 0.05);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(231, 44, 130, 0.2);
+}
