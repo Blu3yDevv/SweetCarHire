@@ -26,8 +26,6 @@ export function Navigation() {
 
   const { currency, setCurrency } = useCurrency()
 
-  const [exchangeRates, setExchangeRates] = useState({ EUR: 0.85, GBP: 0.79, USD: 1, JPY: 110, SCR: 13.5 })
-
   const navItems = [
     { name: "Home", href: "#home" },
     { name: "Fleet", href: "#fleet" },
@@ -154,28 +152,6 @@ export function Navigation() {
     handleScroll()
 
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  // Exchange rates
-  useEffect(() => {
-    const fetchExchangeRates = async () => {
-      try {
-        const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD")
-        if (response.ok) {
-          const data = await response.json()
-          setExchangeRates({
-            EUR: data.rates.EUR || 0.85,
-            GBP: data.rates.GBP || 0.79,
-            USD: 1,
-            JPY: data.rates.JPY || 110,
-            SCR: data.rates.SCR || 13.5,
-          })
-        }
-      } catch (error) {
-        console.log("[v0] Using fallback exchange rates")
-      }
-    }
-    fetchExchangeRates()
   }, [])
 
   // Google Translate

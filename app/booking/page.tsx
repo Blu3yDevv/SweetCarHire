@@ -5,7 +5,6 @@ import { Calendar, Car, User, Shield, Check, ChevronLeft, ChevronRight, Download
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { computePrice, type BookingInput as PricingInput, type BookingPrice } from "@/lib/pricing"
-import { submitBooking, type BookingSubmission } from "@/app/actions/booking"
 
 interface BookingData {
   pickupDate: string
@@ -55,7 +54,7 @@ const carTypes = [
   },
 ]
 
-const steps = ["Details", "Car", "Extras", "Review & Pay"]
+const steps = ["Details", "Car", "Extras", "Payment", "Review"]
 
 export default function BookingPage() {
   const searchParams = useSearchParams()
@@ -223,7 +222,11 @@ export default function BookingPage() {
         return bookingData.carType
       case 2:
         return bookingData.driverName && bookingData.driverEmail && bookingData.whatsappNumber && bookingData.country
+      // Updated case 3 to check for agreeToTerms for Payment step
       case 3:
+        return bookingData.agreeToTerms
+      // Updated case 4 to check for agreeToTerms for Review step
+      case 4:
         return bookingData.agreeToTerms
       default:
         return false
@@ -239,34 +242,59 @@ export default function BookingPage() {
         throw new Error("Please select a car")
       }
 
-      const submission: BookingSubmission = {
-        driverName: bookingData.driverName,
-        driverEmail: bookingData.driverEmail,
+      const bookingPayload = {
+        customerName: bookingData.driverName,
+        customerEmail: bookingData.driverEmail,
         whatsappNumber: bookingData.whatsappNumber,
         country: bookingData.country,
         flightNumber: bookingData.flightNumber,
         pickupDate: bookingData.pickupDate,
         pickupTime: bookingData.pickupTime,
-        dropoffDate: bookingData.dropoffDate,
-        dropoffTime: bookingData.dropoffTime,
-        pickupLocation: bookingData.pickupLocation,
-        dropoffLocation: bookingData.dropoffLocation,
-        customPickupLocation: bookingData.customPickupLocation,
-        customDropoffLocation: bookingData.customDropoffLocation,
-        carType: bookingData.carType,
-        carPricePerDay: selectedCar.price,
+        returnDate: bookingData.dropoffDate,
+        returnTime: bookingData.dropoffTime,
+        pickupLocation:
+          bookingData.pickupLocation === "Custom Location"
+            ? bookingData.customPickupLocation
+            : bookingData.pickupLocation,
+        dropoffLocation:
+          bookingData.dropoffLocation === "Custom Location"
+            ? bookingData.customDropoffLocation
+            : bookingData.dropoffLocation,
+        carId: bookingData.carType,
+        carName: bookingData.carType,
+        currency: "EUR",
+        totalAmountMinor: Math.round(totalPrice * 100),
         childSeat: bookingData.childSeat,
         additionalDriver: bookingData.additionalDriver,
       }
 
-      const result = await submitBooking(submission)
+      const response = await fetch("/api/bookings/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      })
 
-      if (!result.success) {
-        throw new Error(result.error || "Failed to submit booking")
+      if (!response.ok) {
+        throw new Error("Failed to create booking")
       }
 
-      setBookingReference(result.reference!)
-      setBookingComplete(true)
+      const { bookingId, booking } = await response.json()
+
+      console.log("[v0] Booking created:", bookingId)
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          "currentBooking",
+          JSON.stringify({
+            ...booking,
+            rentalDays,
+            pricingBreakdown,
+          }),
+        )
+      }
+
+      // Redirect to payment page
+      window.location.href = `/booking/payment?bookingId=${bookingId}`
     } catch (error) {
       console.error("[v0] Booking submission error:", error)
       alert(
@@ -749,13 +777,106 @@ export default function BookingPage() {
                   </div>
                 </div>
               )}
+              {/* Updated step 3 to be Payment step with PayPal integration */}
               {currentStep === 3 && (
+                <div className="space-y-6 animate-fade-in">
+                  <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3">
+                    <Shield className="w-6 h-6 text-magenta" />
+                    Payment Details
+                  </h2>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Shield className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-navy">Secure Payment</h3>
+                        <p className="text-sm text-gray-600">15% deposit now, 85% at pickup</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span>Total Amount:</span>
+                        <span className="font-bold">€{totalPrice}</span>
+                      </div>
+                      <div className="flex justify-between text-magenta">
+                        <span>Deposit (15%):</span>
+                        <span className="font-bold">€{Math.round(totalPrice * 0.15)}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Due at Pickup (85%):</span>
+                        <span>€{Math.round(totalPrice * 0.85)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-navy mb-4">Choose Payment Method</h3>
+
+                    <div className="space-y-4">
+                      <div className="p-4 border-2 border-magenta bg-magenta/5 rounded-xl">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold">
+                            P
+                          </div>
+                          <div>
+                            <div className="font-semibold">PayPal</div>
+                            <div className="text-xs text-gray-600">Pay securely with PayPal</div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Secure payment processing through PayPal. You can pay with your PayPal account or credit/debit
+                          card.
+                        </p>
+                        <button
+                          onClick={nextStep}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                          Continue to Review
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="p-4 border-2 border-gray-200 rounded-xl opacity-60">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">💳</div>
+                          <div>
+                            <div className="font-semibold">Credit/Debit Card</div>
+                            <div className="text-xs text-gray-600">Secure card payment via PayPal</div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500">Available on payment page</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div className="text-sm text-green-800">
+                        <p className="font-semibold mb-1">Secure & PCI Compliant</p>
+                        <p>
+                          Your payment information is encrypted and never stored on our servers. All transactions are
+                          processed securely through PayPal.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Updated step 4 to be Review step */}
+              {currentStep === 4 && (
                 <div className="space-y-6 animate-fade-in">
                   <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3">
                     <Check className="w-6 h-6 text-magenta" />
                     Review & Confirm
                   </h2>
+
                   <div className="bg-gray-50 rounded-xl p-6 space-y-4">
+                    <h3 className="font-semibold text-navy mb-3">Booking Details</h3>
                     <div className="grid md:grid-cols-2 gap-4 text-sm md:text-base">
                       <div>
                         <span className="font-semibold">Pickup:</span> {bookingData.pickupDate} at{" "}
@@ -785,6 +906,30 @@ export default function BookingPage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="font-semibold text-navy mb-3">Customer Information</h3>
+                    <div className="grid md:grid-cols-2 gap-4 text-sm md:text-base">
+                      <div>
+                        <span className="font-semibold">Name:</span> {bookingData.driverName}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Email:</span> {bookingData.driverEmail}
+                      </div>
+                      <div>
+                        <span className="font-semibold">WhatsApp:</span> {bookingData.whatsappNumber}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Country:</span> {bookingData.country}
+                      </div>
+                      {bookingData.flightNumber && (
+                        <div>
+                          <span className="font-semibold">Flight:</span> {bookingData.flightNumber}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="border-t pt-6">
                     <label className="flex items-start gap-4">
                       <input
@@ -795,22 +940,23 @@ export default function BookingPage() {
                       />
                       <div className="text-sm md:text-base text-gray-600">
                         I agree to the{" "}
-                        <a href="#" className="text-magenta hover:underline">
+                        <a href="/policies" className="text-magenta hover:underline">
                           Terms and Conditions
                         </a>{" "}
                         and{" "}
-                        <a href="#" className="text-magenta hover:underline ml-1">
+                        <a href="/policies" className="text-magenta hover:underline ml-1">
                           Privacy Policy
                         </a>
                       </div>
                     </label>
                   </div>
+
                   <button
                     onClick={submitBookingHandler}
                     disabled={!bookingData.agreeToTerms || isSubmitting}
                     className="w-full bg-magenta hover:bg-magenta/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 text-lg md:text-xl"
                   >
-                    {isSubmitting ? "Processing..." : `Complete Booking - €${totalPrice}`}
+                    {isSubmitting ? "Processing..." : `Proceed to Payment - €${Math.round(totalPrice * 0.15)} Deposit`}
                   </button>
                 </div>
               )}
@@ -823,7 +969,7 @@ export default function BookingPage() {
                   <ChevronLeft className="w-4 h-4" />
                   Previous
                 </button>
-                {currentStep < steps.length - 1 && (
+                {currentStep < steps.length - 1 && currentStep !== 3 && (
                   <button
                     onClick={nextStep}
                     disabled={!canProceed()}
