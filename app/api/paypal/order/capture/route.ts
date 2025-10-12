@@ -33,10 +33,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // In a real app, update database here
-    // For now, we'll rely on sessionStorage on client side
-
-    // TODO: Send confirmation emails to customer and admin
+    try {
+      // Get booking data from sessionStorage (passed from client)
+      const bookingData = body.bookingData
+      if (bookingData) {
+        await fetch(`${process.env.APP_BASE_URL || "http://localhost:3000"}/api/emails/send-confirmation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingData),
+        })
+      }
+    } catch (emailError) {
+      console.error("[v0] Failed to send confirmation emails:", emailError)
+      // Don't fail the payment if email fails
+    }
 
     return NextResponse.json({
       success: true,

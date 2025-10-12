@@ -140,7 +140,11 @@ export default function PaymentPage() {
       const response = await fetch("/api/paypal/order/capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderID: data.orderID, bookingId }),
+        body: JSON.stringify({
+          orderID: data.orderID,
+          bookingId,
+          bookingData: booking, // Pass full booking data for email
+        }),
       })
 
       const result = await response.json()
