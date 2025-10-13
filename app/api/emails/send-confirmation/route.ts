@@ -5,84 +5,131 @@ import {
   type BookingEmailData,
 } from "@/lib/email-templates"
 
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
 export async function POST(request: NextRequest) {
   try {
-    const bookingData: BookingEmailData = await request.json()
+    const booking: BookingEmailData = await request.json()
 
-    console.log("[v0] Sending confirmation emails for booking:", bookingData.bookingId)
+    console.log("[v0] Sending confirmation emails for booking:", booking.bookingId)
+    console.log("[v0] Customer email address:", booking.customerEmail)
+    console.log("[v0] Customer name:", booking.customerName)
 
-    // Send customer confirmation email using Resend
-    if (process.env.RESEND_API_KEY) {
+    const html = generateCustomerConfirmationEmail(booking)
+    const adminText = generateAdminNotificationEmail(booking)
+
+    const results = {
+      customerEmail: { sent: false, preview: html, error: null as string | null, details: null as any },
+      adminEmail: { sent: false, error: null as string | null, details: null as any },
+    }
+
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || "bookings@sweetcarhire.com"
+    const senderName = process.env.BREVO_SENDER_NAME || "Sweet Car Hire"
+
+    if (process.env.BREVO_API_KEY) {
       try {
-        const customerEmailHtml = generateCustomerConfirmationEmail(bookingData)
-
-        const resendResponse = await fetch("https://api.resend.com/emails", {
+        console.log("[v0] Attempting to send customer email via Brevo...")
+        console.log("[v0] Using sender:", senderEmail)
+        const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "api-key": process.env.BREVO_API_KEY,
           },
           body: JSON.stringify({
-            from: "Sweet Car Hire <bookings@sweetcarhire.com>",
-            to: bookingData.customerEmail,
-            subject: `Booking Confirmation - ${bookingData.bookingId}`,
-            html: customerEmailHtml,
+            sender: {
+              name: senderName,
+              email: senderEmail,
+            },
+            to: [
+              {
+                email: booking.customerEmail,
+                name: booking.customerName,
+              },
+            ],
+            subject: `Booking Confirmation - ${booking.bookingId}`,
+            htmlContent: html,
           }),
         })
 
-        if (!resendResponse.ok) {
-          const errorData = await resendResponse.json()
-          console.error("[v0] Resend API error:", errorData)
-          throw new Error(`Resend API error: ${errorData.message || "Unknown error"}`)
+        const responseText = await brevoResponse.text()
+        let responseData
+        try {
+          responseData = JSON.parse(responseText)
+        } catch {
+          responseData = responseText
         }
 
-        const resendData = await resendResponse.json()
-        console.log("[v0] Customer email sent successfully:", resendData)
-      } catch (error) {
-        console.error("[v0] Failed to send customer email:", error)
-        // Don't fail the entire request if email fails
+        console.log("[v0] Brevo response status:", brevoResponse.status)
+        console.log("[v0] Brevo response data:", JSON.stringify(responseData, null, 2))
+
+        if (brevoResponse.ok) {
+          console.log("[v0] Customer email sent via Brevo successfully")
+          results.customerEmail.sent = true
+          results.customerEmail.details = responseData
+          results.customerEmail.details.warning =
+            "⚠️ If customer doesn't receive email, verify sender email in Brevo dashboard: https://app.brevo.com/settings/senders"
+        } else {
+          console.error("[v0] Brevo error response:", responseData)
+          results.customerEmail.error = typeof responseData === "string" ? responseData : JSON.stringify(responseData)
+        }
+      } catch (e: any) {
+        console.error("[v0] Brevo exception:", e?.message)
+        results.customerEmail.error = e?.message ?? "Brevo failed"
       }
     } else {
-      console.warn("[v0] RESEND_API_KEY not configured, skipping customer email")
+      console.warn("[v0] BREVO_API_KEY not configured - email preview available in response")
+      results.customerEmail.error = "Missing BREVO_API_KEY (email preview available)"
     }
 
     if (process.env.WEB3FORMS_KEY) {
       try {
-        const adminEmailHtml = generateAdminNotificationEmail(bookingData)
-
-        const web3FormsResponse = await fetch("https://api.web3forms.com/submit", {
+        console.log("[v0] Attempting to send admin notification via Web3Forms...")
+        const web3Response = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             access_key: process.env.WEB3FORMS_KEY,
-            subject: `New Booking: ${bookingData.bookingId}`,
+            subject: `New Booking: ${booking.bookingId}`,
             from_name: "Sweet Car Hire Booking System",
-            email: bookingData.customerEmail,
-            replyto: bookingData.customerEmail,
-            message: adminEmailHtml,
+            email: booking.customerEmail,
+            replyto: booking.customerEmail,
+            message: adminText,
           }),
         })
 
-        if (!web3FormsResponse.ok) {
-          console.error("[v0] Web3Forms error:", await web3FormsResponse.text())
-        } else {
-          console.log("[v0] Admin notification sent successfully")
+        const responseText = await web3Response.text()
+        let responseData
+        try {
+          responseData = JSON.parse(responseText)
+        } catch {
+          responseData = responseText
         }
-      } catch (error) {
-        console.error("[v0] Failed to send admin notification:", error)
+
+        console.log("[v0] Web3Forms response status:", web3Response.status)
+        console.log("[v0] Web3Forms response data:", JSON.stringify(responseData, null, 2))
+
+        if (web3Response.ok) {
+          console.log("[v0] Admin email sent via Web3Forms successfully")
+          results.adminEmail.sent = true
+          results.adminEmail.details = responseData
+        } else {
+          console.error("[v0] Web3Forms error response:", responseData)
+          results.adminEmail.error = typeof responseData === "string" ? responseData : JSON.stringify(responseData)
+        }
+      } catch (e: any) {
+        console.error("[v0] Web3Forms exception:", e?.message)
+        results.adminEmail.error = e?.message ?? "Web3Forms failed"
       }
+    } else {
+      console.warn("[v0] WEB3FORMS_KEY not configured")
+      results.adminEmail.error = "Missing WEB3FORMS_KEY"
     }
 
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error("[v0] Email sending error:", error)
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Failed to send emails",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ ok: true, results })
+  } catch (e: any) {
+    console.error("[v0] Email API error:", e?.message)
+    return NextResponse.json({ ok: false, error: e?.message ?? "Bad Request" }, { status: 500 })
   }
 }

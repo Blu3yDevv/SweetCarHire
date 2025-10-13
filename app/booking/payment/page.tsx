@@ -325,7 +325,7 @@ export default function PaymentPage() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg"
+                          src="/images/design-mode/pp_cc_mark_37x23.jpg"
                           alt="PayPal"
                           className="h-6"
                         />

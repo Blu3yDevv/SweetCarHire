@@ -52,7 +52,19 @@ export default function TestEmailsPage() {
         body: JSON.stringify(testData),
       })
 
-      const data = await response.json()
+      const textBody = await response.text()
+      let data: any
+
+      try {
+        data = JSON.parse(textBody)
+      } catch (parseError) {
+        // Response is not JSON, use the text as error message
+        setResult({
+          success: false,
+          message: `Server error: ${textBody.substring(0, 200)}`,
+        })
+        return
+      }
 
       if (response.ok) {
         setResult({
