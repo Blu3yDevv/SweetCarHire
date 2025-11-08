@@ -16,6 +16,18 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Customer email address:", booking.customerEmail)
     console.log("[v0] Customer name:", booking.customerName)
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(booking.customerEmail)) {
+      console.error("[v0] Invalid email format:", booking.customerEmail)
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Invalid email address format. Please provide a valid email address.",
+        },
+        { status: 400 },
+      )
+    }
+
     const html = generateCustomerConfirmationEmail(booking)
     const adminText = generateAdminNotificationEmail(booking)
 

@@ -54,7 +54,7 @@ const carTypes = [
   },
 ]
 
-const steps = ["Details", "Car", "Extras", "Payment", "Review"]
+const steps = ["Details", "Car", "Extras", "Review"]
 
 export default function BookingPage() {
   const searchParams = useSearchParams()
@@ -221,12 +221,16 @@ export default function BookingPage() {
       case 1:
         return bookingData.carType
       case 2:
-        return bookingData.driverName && bookingData.driverEmail && bookingData.whatsappNumber && bookingData.country
-      // Updated case 3 to check for agreeToTerms for Payment step
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const isValidEmail = emailRegex.test(bookingData.driverEmail)
+        return (
+          bookingData.driverName &&
+          bookingData.driverEmail &&
+          isValidEmail &&
+          bookingData.whatsappNumber &&
+          bookingData.country
+        )
       case 3:
-        return bookingData.agreeToTerms
-      // Updated case 4 to check for agreeToTerms for Review step
-      case 4:
         return bookingData.agreeToTerms
       default:
         return false
@@ -282,19 +286,25 @@ export default function BookingPage() {
 
       console.log("[v0] Booking created:", bookingId)
 
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(
-          "currentBooking",
-          JSON.stringify({
+      try {
+        await fetch("/api/emails/send-confirmation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             ...booking,
-            rentalDays,
-            pricingBreakdown,
+            rentalDays: pricingBreakdown?.rentalDays,
+            subtotal: pricingBreakdown?.subtotal,
+            vat: pricingBreakdown?.vat,
+            total: pricingBreakdown?.total,
           }),
-        )
+        })
+      } catch (emailError) {
+        console.error("[v0] Failed to send confirmation emails:", emailError)
+        // Don't fail the booking if email fails
       }
 
-      // Redirect to payment page
-      window.location.href = `/booking/payment?bookingId=${bookingId}`
+      setBookingReference(bookingId)
+      setBookingComplete(true)
     } catch (error) {
       console.error("[v0] Booking submission error:", error)
       alert(
@@ -470,7 +480,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 pt-16 md:pt-24">
-      <div className="container mx-auto px-2 md:px-4 py-4 md:py-8">
+      <div className="container mx-auto px-4 md:px-4 py-4 md:py-8 max-w-7xl">
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-4xl font-bold text-navy mb-2 md:mb-4">Complete Your Booking</h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base px-2">
@@ -486,34 +496,32 @@ export default function BookingPage() {
             )}
           </p>
         </div>
-        <div className="flex justify-center mb-6 md:mb-8 px-2">
-          <div className="flex items-center space-x-1 md:space-x-4 bg-white/80 backdrop-blur-md rounded-full px-3 md:px-6 py-2 md:py-3 shadow-lg overflow-x-auto">
+        <div className="flex justify-center mb-6 md:mb-8 px-4">
+          <div className="flex items-center gap-2 md:gap-4 bg-white/80 backdrop-blur-md rounded-full px-4 md:px-6 py-3 shadow-lg">
             {steps.map((step, index) => (
               <div key={step} className="flex items-center flex-shrink-0">
                 <div
-                  className={`flex items-center justify-center w-6 md:w-8 h-6 md:h-8 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${index <= currentStep ? "bg-magenta text-white" : "bg-gray-200 text-gray-500"}`}
+                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300 ${index <= currentStep ? "bg-magenta text-white" : "bg-gray-200 text-gray-500"}`}
                 >
-                  {index < currentStep ? <Check className="w-3 md:w-4 h-3 md:h-4" /> : index + 1}
+                  {index < currentStep ? <Check className="w-4 h-4" /> : index + 1}
                 </div>
                 <span
-                  className={`ml-1 md:ml-2 text-xs md:text-sm font-medium transition-all duration-300 hidden sm:inline ${index <= currentStep ? "text-navy" : "text-gray-400"}`}
+                  className={`ml-2 text-sm font-medium transition-all duration-300 hidden sm:inline ${index <= currentStep ? "text-navy" : "text-gray-400"}`}
                 >
                   {step}
                 </span>
-                {index < steps.length - 1 && (
-                  <ChevronRight className="w-3 md:w-4 h-3 md:h-4 text-gray-300 ml-1 md:ml-4" />
-                )}
+                {index < steps.length - 1 && <ChevronRight className="w-4 h-4 text-gray-300 ml-2 md:ml-4" />}
               </div>
             ))}
           </div>
         </div>
-        <div className="grid lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2">
-            <div className="bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl p-6 md:p-8">
               {currentStep === 0 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3">
-                    <Calendar className="w-6 h-6 text-magenta" />
+                  <h2 className="text-xl md:text-2xl font-bold text-navy flex items-center gap-3">
+                    <Calendar className="w-5 md:w-6 h-5 md:h-6 text-magenta" />
                     Rental Details
                   </h2>
                   <div className="grid md:grid-cols-2 gap-4 md:gap-6">
@@ -524,7 +532,7 @@ export default function BookingPage() {
                         value={bookingData.pickupDate}
                         onChange={(e) => updateBookingData("pickupDate", e.target.value)}
                         min={getTodayDate()}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       />
                     </div>
                     <div>
@@ -533,7 +541,7 @@ export default function BookingPage() {
                         type="time"
                         value={bookingData.pickupTime}
                         onChange={(e) => updateBookingData("pickupTime", e.target.value)}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       />
                     </div>
                     <div>
@@ -543,7 +551,7 @@ export default function BookingPage() {
                         value={bookingData.dropoffDate}
                         onChange={(e) => updateBookingData("dropoffDate", e.target.value)}
                         min={getMinDropoffDate()}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       />
                     </div>
                     <div>
@@ -552,7 +560,7 @@ export default function BookingPage() {
                         type="time"
                         value={bookingData.dropoffTime}
                         onChange={(e) => updateBookingData("dropoffTime", e.target.value)}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       />
                     </div>
                     <div>
@@ -560,7 +568,7 @@ export default function BookingPage() {
                       <select
                         value={bookingData.pickupLocation}
                         onChange={(e) => updateBookingData("pickupLocation", e.target.value)}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       >
                         <option value="">Select pickup location</option>
                         {locations.map((location) => (
@@ -575,7 +583,7 @@ export default function BookingPage() {
                           placeholder="Please specify pickup location"
                           value={bookingData.customPickupLocation || ""}
                           onChange={(e) => updateBookingData("customPickupLocation", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 mt-2 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 mt-2 text-base text-gray-900"
                         />
                       )}
                     </div>
@@ -584,7 +592,7 @@ export default function BookingPage() {
                       <select
                         value={bookingData.dropoffLocation}
                         onChange={(e) => updateBookingData("dropoffLocation", e.target.value)}
-                        className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                       >
                         <option value="">Select drop-off location</option>
                         {locations.map((location) => (
@@ -599,7 +607,7 @@ export default function BookingPage() {
                           placeholder="Please specify drop-off location"
                           value={bookingData.customDropoffLocation || ""}
                           onChange={(e) => updateBookingData("customDropoffLocation", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 mt-2 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 mt-2 text-base text-gray-900"
                         />
                       )}
                     </div>
@@ -673,8 +681,8 @@ export default function BookingPage() {
               {currentStep === 2 && (
                 <div className="space-y-8 animate-fade-in">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3 mb-6">
-                      <User className="w-6 h-6 text-magenta" />
+                    <h2 className="text-xl md:text-2xl font-bold text-navy flex items-center gap-3 mb-6">
+                      <User className="w-5 md:w-6 h-5 md:h-6 text-magenta" />
                       Driver Details
                     </h2>
                     <div className="grid md:grid-cols-2 gap-4 md:gap-6">
@@ -685,7 +693,7 @@ export default function BookingPage() {
                           required
                           value={bookingData.driverName}
                           onChange={(e) => updateBookingData("driverName", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                           placeholder="Enter your full name"
                         />
                       </div>
@@ -696,9 +704,12 @@ export default function BookingPage() {
                           required
                           value={bookingData.driverEmail}
                           onChange={(e) => updateBookingData("driverEmail", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                           placeholder="your@email.com"
                         />
+                        {bookingData.driverEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.driverEmail) && (
+                          <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-navy mb-2">WhatsApp Number *</label>
@@ -707,7 +718,7 @@ export default function BookingPage() {
                           required
                           value={bookingData.whatsappNumber}
                           onChange={(e) => updateBookingData("whatsappNumber", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                           placeholder="+248 xxx xxxx"
                         />
                       </div>
@@ -718,7 +729,7 @@ export default function BookingPage() {
                           required
                           value={bookingData.country}
                           onChange={(e) => updateBookingData("country", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                           placeholder="Your country"
                         />
                       </div>
@@ -728,7 +739,7 @@ export default function BookingPage() {
                           type="text"
                           value={bookingData.flightNumber}
                           onChange={(e) => updateBookingData("flightNumber", e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-300 bg-white rounded-lg md:rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-sm md:text-base text-gray-900"
+                          className="w-full px-4 py-3 border-2 border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-magenta focus:border-magenta transition-all duration-300 text-base text-gray-900"
                           placeholder="e.g., EK123"
                         />
                       </div>
@@ -777,101 +788,10 @@ export default function BookingPage() {
                   </div>
                 </div>
               )}
-              {/* Updated step 3 to be Payment step with PayPal integration */}
               {currentStep === 3 && (
                 <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3">
-                    <Shield className="w-6 h-6 text-magenta" />
-                    Payment Details
-                  </h2>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Shield className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-navy">Secure Payment</h3>
-                        <p className="text-sm text-gray-600">15% deposit now, 85% at pickup</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span>Total Amount:</span>
-                        <span className="font-bold">€{totalPrice}</span>
-                      </div>
-                      <div className="flex justify-between text-magenta">
-                        <span>Deposit (15%):</span>
-                        <span className="font-bold">€{Math.round(totalPrice * 0.15)}</span>
-                      </div>
-                      <div className="flex justify-between text-gray-600">
-                        <span>Due at Pickup (85%):</span>
-                        <span>€{Math.round(totalPrice * 0.85)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-                    <h3 className="font-semibold text-navy mb-4">Choose Payment Method</h3>
-
-                    <div className="space-y-4">
-                      <div className="p-4 border-2 border-magenta bg-magenta/5 rounded-xl">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold">
-                            P
-                          </div>
-                          <div>
-                            <div className="font-semibold">PayPal</div>
-                            <div className="text-xs text-gray-600">Pay securely with PayPal</div>
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-4">
-                          Secure payment processing through PayPal. You can pay with your PayPal account or credit/debit
-                          card.
-                        </p>
-                        <button
-                          onClick={nextStep}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
-                        >
-                          Continue to Review
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="p-4 border-2 border-gray-200 rounded-xl opacity-60">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">💳</div>
-                          <div>
-                            <div className="font-semibold">Credit/Debit Card</div>
-                            <div className="text-xs text-gray-600">Secure card payment via PayPal</div>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500">Available on payment page</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                      <div className="text-sm text-green-800">
-                        <p className="font-semibold mb-1">Secure & PCI Compliant</p>
-                        <p>
-                          Your payment information is encrypted and never stored on our servers. All transactions are
-                          processed securely through PayPal.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Updated step 4 to be Review step */}
-              {currentStep === 4 && (
-                <div className="space-y-6 animate-fade-in">
-                  <h2 className="text-2xl md:text-3xl font-bold text-navy flex items-center gap-3">
-                    <Check className="w-6 h-6 text-magenta" />
+                  <h2 className="text-xl md:text-2xl font-bold text-navy flex items-center gap-3">
+                    <Check className="w-5 md:w-6 h-5 md:h-6 text-magenta" />
                     Review & Confirm
                   </h2>
 
@@ -956,10 +876,18 @@ export default function BookingPage() {
                     disabled={!bookingData.agreeToTerms || isSubmitting}
                     className="w-full bg-magenta hover:bg-magenta/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 text-lg md:text-xl"
                   >
-                    {isSubmitting ? "Processing..." : `Proceed to Payment - €${Math.round(totalPrice * 0.15)} Deposit`}
+                    {isSubmitting ? "Processing..." : "Confirm Booking"}
                   </button>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Payment:</strong> Our team will contact you within 24 hours to arrange payment details and
+                      finalize your booking.
+                    </p>
+                  </div>
                 </div>
               )}
+
               <div className="flex justify-between mt-8 pt-6 border-t">
                 <button
                   onClick={prevStep}
@@ -969,7 +897,7 @@ export default function BookingPage() {
                   <ChevronLeft className="w-4 h-4" />
                   Previous
                 </button>
-                {currentStep < steps.length - 1 && currentStep !== 3 && (
+                {currentStep < steps.length - 1 && (
                   <button
                     onClick={nextStep}
                     disabled={!canProceed()}
@@ -983,7 +911,7 @@ export default function BookingPage() {
             </div>
           </div>
           <div className="lg:col-span-1">
-            <div className="sticky top-20 md:top-24 bg-white/90 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 border border-white/30 price-summary">
+            <div className="sticky top-20 md:top-24 bg-white/90 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl p-6 border border-white/30 price-summary">
               <h3 className="text-lg md:text-xl font-bold text-navy mb-4">Booking Summary</h3>
               {bookingData.carType && pricingBreakdown && (
                 <div className="space-y-3 mb-6">

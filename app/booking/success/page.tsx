@@ -84,7 +84,7 @@ export default function BookingSuccessPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-navy mb-4">Booking Confirmed!</h1>
-            <p className="text-gray-600 mb-6">Your deposit has been paid successfully.</p>
+            <p className="text-gray-600 mb-6">Your booking has been submitted successfully.</p>
 
             <div className="bg-gray-50 rounded-xl p-6 mb-6">
               <h3 className="font-semibold text-navy mb-2">Booking Reference</h3>
@@ -114,19 +114,15 @@ export default function BookingSuccessPage() {
                   <span className="text-blue-800">Total Amount:</span>
                   <span className="font-bold text-blue-900">{formatAmount(booking.totalAmountMinor)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-800">Deposit Paid:</span>
-                  <span className="font-bold text-green-600">{formatAmount(booking.depositAmountMinor)}</span>
-                </div>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6 text-left">
               <h3 className="font-bold text-yellow-900 mb-2">Next Steps</h3>
               <ul className="text-sm text-yellow-800 space-y-2">
-                <li>✓ Deposit paid successfully</li>
+                <li>✓ Booking confirmed successfully</li>
                 <li>✓ Confirmation email sent to {booking.customerEmail}</li>
-                <li>• Remaining balance due at pickup (cash/card)</li>
+                <li>• Our team will contact you within 24 hours to arrange payment</li>
                 <li>• Bring your booking reference and valid driver's license</li>
               </ul>
             </div>
