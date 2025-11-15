@@ -1,322 +1,329 @@
-// Email template types and generators for booking confirmations
-
 export interface BookingEmailData {
   bookingId: string
+  bookingDate: string
   customerName: string
   customerEmail: string
   customerPhone: string
+  carName: string
+  carType?: string
   pickupDate: string
   pickupTime: string
-  dropoffDate: string
-  dropoffTime: string
   pickupLocation: string
-  dropoffLocation: string
-  carName: string
-  carImage?: string
-  transmission: string
-  passengers: number
-  luggage: number
-  extras?: Array<{ name: string; price: number; quantity?: number }>
+  returnDate: string
+  returnTime: string
+  returnLocation: string
+  extras?: Array<{ name: string; price: number }>
+  specialRequests?: string
   // Support both flat and nested pricing structures
   subtotal?: number
   vat?: number
   total?: number
-  depositAmount?: number
-  remainingAmount?: number
   pricing?: {
     subtotal: number
     vat: number
     total: number
-    depositAmount: number
-    remainingAmount: number
   }
-  currency?: string
 }
 
 // Helper function to safely format prices
-function formatPrice(amount: number | undefined, currency = "EUR"): string {
-  const value = amount ?? 0
-  const symbol = currency === "EUR" ? "€" : currency === "GBP" ? "£" : "$"
-  return `${symbol}${value.toFixed(2)}`
+function formatPrice(amount: number | undefined): string {
+  if (amount === undefined || amount === null) {
+    return "€0.00"
+  }
+  return `€${amount.toFixed(2)}`
 }
 
-// Helper function to safely format dates
-function formatDate(dateStr: string | undefined): string {
-  if (!dateStr) return "N/A"
+// Helper function to format dates
+function formatDate(dateString: string): string {
   try {
-    return new Date(dateStr).toLocaleDateString("en-GB", {
-      weekday: "long",
-      year: "numeric",
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      day: "2-digit",
       month: "long",
-      day: "numeric",
+      year: "numeric",
     })
   } catch {
-    return dateStr
+    return dateString
   }
 }
 
-// Generate beautiful HTML email for customer confirmation
-export function generateCustomerConfirmationEmail(booking: BookingEmailData): string {
-  const currency = booking.currency || "EUR"
-
-  // Support both flat and nested pricing structures
-  const getPricing = () => ({
+// Helper function to get pricing from either flat or nested structure
+function getPricing(booking: BookingEmailData): { subtotal: number; vat: number; total: number } {
+  return {
     subtotal: booking.pricing?.subtotal ?? booking.subtotal ?? 0,
     vat: booking.pricing?.vat ?? booking.vat ?? 0,
     total: booking.pricing?.total ?? booking.total ?? 0,
-    depositAmount: booking.pricing?.depositAmount ?? booking.depositAmount ?? 0,
-    remainingAmount: booking.pricing?.remainingAmount ?? booking.remainingAmount ?? 0,
-  })
+  }
+}
 
-  const pricing = getPricing()
-  const extras = booking.extras || []
+export function generateCustomerConfirmationEmail(booking: BookingEmailData): string {
+  const pricing = getPricing(booking)
 
   return `
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmation</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: white; }
+    .header { background: linear-gradient(135deg, #1a365d 0%, #d946aa 100%); color: white; padding: 40px 20px; text-align: center; }
+    .header h1 { margin: 0 0 10px 0; font-size: 32px; }
+    .header p { margin: 0; font-size: 18px; opacity: 0.9; }
+    .content { padding: 30px 20px; }
+    .section { background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #d946aa; }
+    .section-title { font-size: 18px; font-weight: bold; color: #1a365d; margin: 0 0 15px 0; }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
+    .detail-row:last-child { border-bottom: none; }
+    .label { color: #6c757d; font-weight: 500; }
+    .value { font-weight: bold; color: #1a365d; text-align: right; }
+    .total-section { background: #1a365d; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; }
+    .total-label { font-size: 18px; }
+    .total-value { font-size: 32px; font-weight: bold; }
+    .alert { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
+    @media only screen and (max-width: 600px) {
+      .detail-row { flex-direction: column; }
+      .value { text-align: left; margin-top: 5px; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          
-           Header 
-          <tr>
-            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Booking Confirmed!</h1>
-              <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px;">Thank you for choosing Sweet Car Hire</p>
-            </td>
-          </tr>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚗 Sweet Car Hire</h1>
+      <p>Booking Confirmation</p>
+    </div>
+    
+    <div class="content">
+      <h2 style="color: #1a365d; margin-top: 0;">Thank You, ${booking.customerName}!</h2>
+      <p style="color: #6c757d; font-size: 16px;">Your booking has been confirmed. Here are your reservation details:</p>
+      
+      <div class="alert">
+        <strong>📋 Booking Reference: ${booking.bookingId}</strong>
+        <p style="margin: 10px 0 0 0;">Please save this reference number for your records.</p>
+      </div>
 
-           Booking ID 
-          <tr>
-            <td style="padding: 30px; text-align: center; background-color: #f8f9fa;">
-              <p style="margin: 0; color: #666; font-size: 14px;">Booking Reference</p>
-              <p style="margin: 5px 0 0 0; color: #333; font-size: 24px; font-weight: bold;">${booking.bookingId}</p>
-            </td>
-          </tr>
+      <div class="section">
+        <div class="section-title">🚗 Vehicle Details</div>
+        <div class="detail-row">
+          <span class="label">Vehicle:</span>
+          <span class="value">${booking.carName}</span>
+        </div>
+        ${booking.carType ? `<div class="detail-row"><span class="label">Category:</span><span class="value">${booking.carType}</span></div>` : ""}
+      </div>
 
-           Customer Details 
-          <tr>
-            <td style="padding: 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Customer Details</h2>
-              <table width="100%" cellpadding="8" cellspacing="0">
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Name:</td>
-                  <td style="color: #333; font-size: 14px; font-weight: bold; text-align: right;">${booking.customerName}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Email:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.customerEmail}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Phone:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.customerPhone}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      <div class="section">
+        <div class="section-title">📅 Rental Period</div>
+        <div class="detail-row">
+          <span class="label">Pickup:</span>
+          <span class="value">${formatDate(booking.pickupDate)} at ${booking.pickupTime}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Return:</span>
+          <span class="value">${formatDate(booking.returnDate)} at ${booking.returnTime}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Pickup Location:</span>
+          <span class="value">${booking.pickupLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Return Location:</span>
+          <span class="value">${booking.returnLocation}</span>
+        </div>
+      </div>
 
-           Vehicle Details 
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Vehicle Details</h2>
-              <table width="100%" cellpadding="8" cellspacing="0">
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Vehicle:</td>
-                  <td style="color: #333; font-size: 14px; font-weight: bold; text-align: right;">${booking.carName}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Transmission:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.transmission}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Passengers:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.passengers}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Luggage:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.luggage}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      ${
+        booking.extras && booking.extras.length > 0
+          ? `
+      <div class="section">
+        <div class="section-title">➕ Additional Extras</div>
+        ${booking.extras.map((extra) => `<div class="detail-row"><span class="label">${extra.name}:</span><span class="value">${formatPrice(extra.price)}</span></div>`).join("")}
+      </div>
+      `
+          : ""
+      }
 
-           Rental Period 
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Rental Period</h2>
-              <table width="100%" cellpadding="8" cellspacing="0">
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Pick-up:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${formatDate(booking.pickupDate)} at ${booking.pickupTime}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Drop-off:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${formatDate(booking.dropoffDate)} at ${booking.dropoffTime}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Pick-up Location:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.pickupLocation}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px;">Drop-off Location:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${booking.dropoffLocation}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      <div class="total-section">
+        <div class="total-row">
+          <span class="total-label">Total Amount:</span>
+          <span class="total-value">${formatPrice(pricing.total)}</span>
+        </div>
+        <div style="margin-top: 10px; opacity: 0.9; font-size: 14px;">
+          <div>Subtotal: ${formatPrice(pricing.subtotal)}</div>
+          <div>VAT (18%): ${formatPrice(pricing.vat)}</div>
+        </div>
+      </div>
 
-          ${
-            extras.length > 0
-              ? `
-           Extras 
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Extras</h2>
-              <table width="100%" cellpadding="8" cellspacing="0">
-                ${extras
-                  .map(
-                    (extra) => `
-                <tr>
-                  <td style="color: #666; font-size: 14px;">${extra.name}${extra.quantity ? ` (x${extra.quantity})` : ""}:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right;">${formatPrice(extra.price, currency)}</td>
-                </tr>
-                `,
-                  )
-                  .join("")}
-              </table>
-            </td>
-          </tr>
-          `
-              : ""
-          }
+      ${
+        booking.specialRequests
+          ? `
+      <div class="section">
+        <div class="section-title">💬 Your Special Requests</div>
+        <p style="margin: 0; white-space: pre-wrap;">${booking.specialRequests}</p>
+      </div>
+      `
+          : ""
+      }
 
-           Pricing Summary 
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Payment Summary</h2>
-              <table width="100%" cellpadding="8" cellspacing="0" style="background-color: #f8f9fa; border-radius: 8px;">
-                <tr>
-                  <td style="color: #666; font-size: 14px; padding: 12px;">Subtotal:</td>
-                  <td style="color: #333; font-size: 14px; text-align: right; padding: 12px;">${formatPrice(pricing.subtotal, currency)}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px; padding: 12px;">VAT (21%):</td>
-                  <td style="color: #333; font-size: 14px; text-align: right; padding: 12px;">${formatPrice(pricing.vat, currency)}</td>
-                </tr>
-                <tr style="border-top: 2px solid #667eea;">
-                  <td style="color: #333; font-size: 18px; font-weight: bold; padding: 12px;">Total:</td>
-                  <td style="color: #667eea; font-size: 18px; font-weight: bold; text-align: right; padding: 12px;">${formatPrice(pricing.total, currency)}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px; padding: 12px;">Deposit Paid:</td>
-                  <td style="color: #28a745; font-size: 14px; font-weight: bold; text-align: right; padding: 12px;">${formatPrice(pricing.depositAmount, currency)}</td>
-                </tr>
-                <tr>
-                  <td style="color: #666; font-size: 14px; padding: 12px;">Remaining Balance:</td>
-                  <td style="color: #dc3545; font-size: 14px; font-weight: bold; text-align: right; padding: 12px;">${formatPrice(pricing.remainingAmount, currency)}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      <div class="alert">
+        <strong>⚠️ Important - Next Steps</strong>
+        <p style="margin: 10px 0 0 0;">Our team will contact you within 24 hours to arrange payment details and confirm your reservation. Please have your booking reference ready.</p>
+      </div>
 
-           Important Information 
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px;">
-                <p style="margin: 0; color: #856404; font-size: 14px; font-weight: bold;">Important Information:</p>
-                <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #856404; font-size: 13px;">
-                  <li>Please bring your driver's license and payment card</li>
-                  <li>The remaining balance is due at pick-up</li>
-                  <li>Arrive 15 minutes before your scheduled pick-up time</li>
-                </ul>
-              </div>
-            </td>
-          </tr>
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong style="color: #1976d2;">📋 What to Bring:</strong>
+        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #1976d2;">
+          <li>This booking confirmation</li>
+          <li>Valid driver's license</li>
+          <li>Credit card for security deposit</li>
+        </ul>
+      </div>
+    </div>
 
-           Footer 
-          <tr>
-            <td style="padding: 30px; text-align: center; background-color: #f8f9fa; border-top: 1px solid #e9ecef;">
-              <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Need help? Contact us:</p>
-              <p style="margin: 0; color: #667eea; font-size: 14px; font-weight: bold;">bookings@sweetcarhire.com</p>
-              <p style="margin: 15px 0 0 0; color: #999; font-size: 12px;">© 2025 Sweet Car Hire. All rights reserved.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
+    <div class="footer">
+      <p><strong>Sweet Car Hire</strong></p>
+      <p>Malta's Premier Car Rental Service</p>
+      <p>📧 info@sweetcarhire.com | 📞 +356 1234 5678</p>
+      <p style="margin-top: 15px; font-size: 12px;">
+        If you have any questions, please don't hesitate to contact us.
+      </p>
+    </div>
+  </div>
 </body>
 </html>
-  `.trim()
+`
 }
 
-// Generate plain text email for admin notification
 export function generateAdminNotificationEmail(booking: BookingEmailData): string {
-  const currency = booking.currency || "EUR"
-
-  // Support both flat and nested pricing structures
-  const getPricing = () => ({
-    subtotal: booking.pricing?.subtotal ?? booking.subtotal ?? 0,
-    vat: booking.pricing?.vat ?? booking.vat ?? 0,
-    total: booking.pricing?.total ?? booking.total ?? 0,
-    depositAmount: booking.pricing?.depositAmount ?? booking.depositAmount ?? 0,
-    remainingAmount: booking.pricing?.remainingAmount ?? booking.remainingAmount ?? 0,
-  })
-
-  const pricing = getPricing()
-  const extras = booking.extras || []
+  const pricing = getPricing(booking)
 
   return `
-NEW BOOKING RECEIVED
-====================
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #1a365d 0%, #d946aa 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 12px 12px; }
+    .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #d946aa; }
+    .section-title { font-size: 18px; font-weight: bold; color: #1a365d; margin-bottom: 15px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
+    .detail-row:last-child { border-bottom: none; }
+    .label { color: #6c757d; font-weight: 500; }
+    .value { font-weight: bold; color: #1a365d; }
+    .alert { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0; font-size: 28px;">🚗 New Booking Received</h1>
+      <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${booking.bookingId}</p>
+    </div>
+    
+    <div class="content">
+      <div class="alert">
+        <strong>⚠️ Action Required:</strong> Contact customer within 24 hours to arrange payment details.
+      </div>
 
-Booking Reference: ${booking.bookingId}
+      <div class="section">
+        <div class="section-title">📋 Booking Details</div>
+        <div class="detail-row">
+          <span class="label">Booking ID:</span>
+          <span class="value">${booking.bookingId}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Booking Date:</span>
+          <span class="value">${formatDate(booking.bookingDate)}</span>
+        </div>
+      </div>
 
-CUSTOMER DETAILS
-----------------
-Name: ${booking.customerName}
-Email: ${booking.customerEmail}
-Phone: ${booking.customerPhone}
+      <div class="section">
+        <div class="section-title">👤 Customer Information</div>
+        <div class="detail-row">
+          <span class="label">Name:</span>
+          <span class="value">${booking.customerName}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Email:</span>
+          <span class="value"><a href="mailto:${booking.customerEmail}">${booking.customerEmail}</a></span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Phone:</span>
+          <span class="value"><a href="tel:${booking.customerPhone}">${booking.customerPhone}</a></span>
+        </div>
+      </div>
 
-VEHICLE DETAILS
----------------
-Vehicle: ${booking.carName}
-Transmission: ${booking.transmission}
-Passengers: ${booking.passengers}
-Luggage: ${booking.luggage}
+      <div class="section">
+        <div class="section-title">🚗 Vehicle Details</div>
+        <div class="detail-row">
+          <span class="label">Vehicle:</span>
+          <span class="value">${booking.carName}</span>
+        </div>
+        ${booking.carType ? `<div class="detail-row"><span class="label">Category:</span><span class="value">${booking.carType}</span></div>` : ""}
+      </div>
 
-RENTAL PERIOD
--------------
-Pick-up: ${formatDate(booking.pickupDate)} at ${booking.pickupTime}
-Drop-off: ${formatDate(booking.dropoffDate)} at ${booking.dropoffTime}
-Pick-up Location: ${booking.pickupLocation}
-Drop-off Location: ${booking.dropoffLocation}
+      <div class="section">
+        <div class="section-title">📅 Rental Period</div>
+        <div class="detail-row">
+          <span class="label">Pickup:</span>
+          <span class="value">${formatDate(booking.pickupDate)} at ${booking.pickupTime}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Return:</span>
+          <span class="value">${formatDate(booking.returnDate)} at ${booking.returnTime}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Pickup Location:</span>
+          <span class="value">${booking.pickupLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Return Location:</span>
+          <span class="value">${booking.returnLocation}</span>
+        </div>
+      </div>
 
-${
-  extras.length > 0
-    ? `EXTRAS
--------
-${extras.map((extra) => `${extra.name}${extra.quantity ? ` (x${extra.quantity})` : ""}: ${formatPrice(extra.price, currency)}`).join("\n")}
+      ${
+        booking.extras && booking.extras.length > 0
+          ? `
+      <div class="section">
+        <div class="section-title">➕ Additional Extras</div>
+        ${booking.extras.map((extra) => `<div class="detail-row"><span class="label">${extra.name}:</span><span class="value">${formatPrice(extra.price)}</span></div>`).join("")}
+      </div>
+      `
+          : ""
+      }
 
+      <div class="section" style="background: #1a365d; color: white; border-left: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 14px; opacity: 0.8; margin-bottom: 5px;">Total Amount</div>
+            <div style="font-size: 32px; font-weight: bold;">${formatPrice(pricing.total)}</div>
+          </div>
+          <div style="text-align: right; opacity: 0.9;">
+            <div>Subtotal: ${formatPrice(pricing.subtotal)}</div>
+            <div>VAT (18%): ${formatPrice(pricing.vat)}</div>
+          </div>
+        </div>
+      </div>
+
+      ${
+        booking.specialRequests
+          ? `
+      <div class="section">
+        <div class="section-title">💬 Special Requests</div>
+        <p style="margin: 0; white-space: pre-wrap;">${booking.specialRequests}</p>
+      </div>
+      `
+          : ""
+      }
+    </div>
+  </div>
+</body>
+</html>
 `
-    : ""
-}PAYMENT SUMMARY
----------------
-Subtotal: ${formatPrice(pricing.subtotal, currency)}
-VAT (21%): ${formatPrice(pricing.vat, currency)}
-Total: ${formatPrice(pricing.total, currency)}
-Deposit Paid: ${formatPrice(pricing.depositAmount, currency)}
-Remaining Balance: ${formatPrice(pricing.remainingAmount, currency)}
-
-====================
-This is an automated notification from Sweet Car Hire booking system.
-  `.trim()
 }

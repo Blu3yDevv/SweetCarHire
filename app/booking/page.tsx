@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Car, User, Shield, Check, ChevronLeft, ChevronRight, Download } from "lucide-react"
+import { Calendar, Car, User, Shield, Check, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import Image from "next/image"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams } from 'next/navigation'
 import { computePrice, type BookingInput as PricingInput, type BookingPrice } from "@/lib/pricing"
 
 interface BookingData {
@@ -116,13 +116,10 @@ export default function BookingPage() {
         const dropoffDateTime = new Date(`${bookingData.dropoffDate}T${bookingData.dropoffTime}`)
 
         if (dropoffDateTime <= pickupDateTime) {
-          // Auto-correct to next day at same time
-          const newDropoff = new Date(pickupDateTime)
-          newDropoff.setDate(newDropoff.getDate() + 1)
-          updateBookingData("dropoffDate", newDropoff.toISOString().split("T")[0])
-          updateBookingData("dropoffTime", bookingData.pickupTime)
+          console.log("[v0] Drop-off time is not after pickup time, skipping calculation")
           return
         }
+        // </CHANGE>
 
         const timeDiffMs = dropoffDateTime.getTime() - pickupDateTime.getTime()
         const hoursDiff = timeDiffMs / (1000 * 60 * 60)
@@ -157,6 +154,15 @@ export default function BookingPage() {
 
     const selectedCar = carTypes.find((car) => car.name === bookingData.carType)
     if (!selectedCar) return
+
+    const pickupDateTime = new Date(`${bookingData.pickupDate}T${bookingData.pickupTime}`)
+    const dropoffDateTime = new Date(`${bookingData.dropoffDate}T${bookingData.dropoffTime}`)
+    
+    if (dropoffDateTime <= pickupDateTime) {
+      console.log("[v0] Drop-off time is not after pickup time, skipping pricing calculation")
+      return
+    }
+    // </CHANGE>
 
     const pricingInput: PricingInput = {
       ratePerDay: selectedCar.price,
