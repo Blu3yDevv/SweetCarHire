@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from 'next/navigation'
-import { Check, Download, Calendar, Car, MapPin, Phone, Mail, ArrowRight } from 'lucide-react'
+import { useSearchParams } from "next/navigation"
+import { Check, Download, Calendar, Car, MapPin, Phone, Mail, ArrowRight } from "lucide-react"
 
 export default function BookingSuccessPage() {
   const searchParams = useSearchParams()
@@ -151,7 +151,7 @@ body {
     Thank you for your booking! Our team will contact you within 24 hours to arrange payment details and confirm your reservation.
   </p>
   <p style="margin: 5px 0; color: #666;">
-    <strong>Contact:</strong> info@sweetcarhire.com | +356 1234 5678
+    <strong>Contact:</strong> info@sweetcarhire.com | +248 2821182
   </p>
 </div>
 
@@ -221,8 +221,8 @@ ${
 
 <div class="footer">
   <p><strong>Sweet Car Hire</strong></p>
-  <p>Malta's Premier Car Rental Service</p>
-  <p>info@sweetcarhire.com | +356 1234 5678</p>
+  <p>Seychelles' Premier Car Rental Service</p>
+  <p>info@sweetcarhire.com | +248 2821182</p>
   <p style="margin-top: 20px; font-size: 12px;">
     Please bring this confirmation and your valid driver's license when picking up the vehicle.
   </p>
@@ -230,25 +230,15 @@ ${
 </body>
 </html>`
 
-    // Create a temporary element to download the PDF
     const blob = new Blob([voucherHTML], { type: "text/html" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = `Sweet-Car-Hire-${reference}.html`
+    link.download = `Sweet-Car-Hire-Voucher-${reference}.html`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-
-    // Also open in new window for immediate printing if user wants
-    setTimeout(() => {
-      const printWindow = window.open("", "_blank")
-      if (printWindow) {
-        printWindow.document.write(voucherHTML)
-        printWindow.document.close()
-      }
-    }, 100)
   }
 
   if (loading) {

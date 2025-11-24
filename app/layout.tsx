@@ -88,7 +88,7 @@ export default function RootLayout({
 
         <div id="google_translate_element" style={{ display: "none" }}></div>
 
-        <CurrencyProvider defaultCurrency="SCR" defaultLocale="en-SEZ">
+        <CurrencyProvider defaultCurrency="EUR" defaultLocale="en-SC">
           <Suspense fallback={null}>{children}</Suspense>
         </CurrencyProvider>
 

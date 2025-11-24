@@ -40,6 +40,11 @@ export async function POST(request: NextRequest) {
     const senderName = process.env.BREVO_SENDER_NAME || "Sweet Car Hire"
     const adminEmail = process.env.ADMIN_EMAIL || "info@sweetcarhire.com"
 
+    console.log("[v0] Email configuration:")
+    console.log("[v0] - Sender:", senderEmail)
+    console.log("[v0] - Admin:", adminEmail)
+    console.log("[v0] - BREVO_API_KEY configured:", !!process.env.BREVO_API_KEY)
+
     if (!process.env.BREVO_API_KEY) {
       console.warn("[v0] BREVO_API_KEY not configured - email preview available in response")
       results.customerEmail.error = "Missing BREVO_API_KEY (email preview available)"

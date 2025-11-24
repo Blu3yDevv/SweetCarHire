@@ -4,6 +4,7 @@ export interface BookingEmailData {
   customerName: string
   customerEmail: string
   customerPhone: string
+  whatsappNumber?: string // Added WhatsApp number to interface
   carName: string
   carType?: string
   pickupDate: string
@@ -14,13 +15,11 @@ export interface BookingEmailData {
   returnLocation: string
   extras?: Array<{ name: string; price: number }>
   specialRequests?: string
-  // Support both flat and nested pricing structures
+  // Support both flat and nested pricing structures without VAT
   subtotal?: number
-  vat?: number
   total?: number
   pricing?: {
     subtotal: number
-    vat: number
     total: number
   }
 }
@@ -46,11 +45,10 @@ function formatDate(dateString: string): string {
   }
 }
 
-// Helper function to get pricing from either flat or nested structure
-function getPricing(booking: BookingEmailData): { subtotal: number; vat: number; total: number } {
+// Helper function to get pricing from either flat or nested structure without VAT
+function getPricing(booking: BookingEmailData): { subtotal: number; total: number } {
   return {
     subtotal: booking.pricing?.subtotal ?? booking.subtotal ?? 0,
-    vat: booking.pricing?.vat ?? booking.vat ?? 0,
     total: booking.pricing?.total ?? booking.total ?? 0,
   }
 }
@@ -152,7 +150,6 @@ export function generateCustomerConfirmationEmail(booking: BookingEmailData): st
         </div>
         <div style="margin-top: 10px; opacity: 0.9; font-size: 14px;">
           <div>Subtotal: ${formatPrice(pricing.subtotal)}</div>
-          <div>VAT (18%): ${formatPrice(pricing.vat)}</div>
         </div>
       </div>
 
@@ -256,6 +253,14 @@ export function generateAdminNotificationEmail(booking: BookingEmailData): strin
           <span class="label">Phone:</span>
           <span class="value"><a href="tel:${booking.customerPhone}">${booking.customerPhone}</a></span>
         </div>
+        ${
+          booking.whatsappNumber
+            ? `<div class="detail-row">
+          <span class="label">WhatsApp:</span>
+          <span class="value"><a href="https://wa.me/${booking.whatsappNumber.replace(/[^0-9]/g, "")}">${booking.whatsappNumber}</a></span>
+        </div>`
+            : ""
+        }
       </div>
 
       <div class="section">
@@ -306,7 +311,6 @@ export function generateAdminNotificationEmail(booking: BookingEmailData): strin
           </div>
           <div style="text-align: right; opacity: 0.9;">
             <div>Subtotal: ${formatPrice(pricing.subtotal)}</div>
-            <div>VAT (18%): ${formatPrice(pricing.vat)}</div>
           </div>
         </div>
       </div>

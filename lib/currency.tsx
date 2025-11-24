@@ -15,7 +15,7 @@ const CurrencyCtx = createContext<Ctx | null>(null)
 
 export function CurrencyProvider({
   children,
-  defaultCurrency = "SCR",
+  defaultCurrency = "EUR",
   defaultLocale = "en-SC",
 }: {
   children: ReactNode
@@ -27,25 +27,39 @@ export function CurrencyProvider({
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedCurrency")
-    if (saved) setCurrencyState(saved)
+    if (saved) {
+      console.log("[v0] Loaded currency from localStorage:", saved)
+      setCurrencyState(saved)
+    }
   }, [])
 
   useEffect(() => {
-    ;(async () => {
+    const fetchRates = async () => {
       try {
+        console.log("[v0] Fetching exchange rates...")
         const res = await fetch("/api/rates?base=EUR", { cache: "no-store" })
-        if (!res.ok) return
+        if (!res.ok) {
+          console.error("[v0] Failed to fetch rates:", res.status)
+          return
+        }
         const data = await res.json()
+        console.log("[v0] Exchange rates updated:", data.rates)
         setRates((prev) => ({ ...prev, ...data.rates }))
-      } catch {
-        console.log("[v0] Using fallback exchange rates")
+      } catch (error) {
+        console.error("[v0] Error fetching exchange rates:", error)
       }
-    })()
+    }
+
+    fetchRates()
+    const interval = setInterval(fetchRates, 30 * 60 * 1000)
+    return () => clearInterval(interval)
   }, [])
 
   const setCurrency = (c: string) => {
+    console.log("[v0] Changing currency to:", c)
     setCurrencyState(c)
     localStorage.setItem("selectedCurrency", c)
+    window.dispatchEvent(new CustomEvent("currency-changed", { detail: c }))
   }
 
   const convert = (amountEUR: number) => {
