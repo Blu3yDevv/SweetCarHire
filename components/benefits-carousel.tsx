@@ -1,35 +1,45 @@
 "use client"
 
+import { Shield, Zap, DollarSign, Clock, XCircle, TrendingDown } from "lucide-react"
+
 export function BenefitsCarousel() {
   const benefits = [
-    "Airport delivery",
-    "Unlimited mileage",
-    "No hidden fees",
-    "24/7 Support",
-    "Free cancellation",
-    "Best rates guaranteed",
+    { text: "Airport delivery", icon: Clock },
+    { text: "Unlimited mileage", icon: TrendingDown },
+    { text: "No hidden fees", icon: Shield },
+    { text: "24/7 Support", icon: Zap },
+    { text: "Free cancellation", icon: XCircle },
+    { text: "Best rates guaranteed", icon: DollarSign },
   ]
 
   return (
-    <div className="overflow-hidden max-w-xs sm:max-w-lg md:max-w-2xl mx-auto">
+    <div className="overflow-hidden max-w-4xl mx-auto py-4">
       <div className="flex animate-scroll-left whitespace-nowrap">
-        {benefits.map((benefit, index) => (
-          <span
-            key={index}
-            className="text-white font-medium text-sm sm:text-base md:text-lg mx-4 sm:mx-6 md:mx-8 drop-shadow-lg"
-          >
-            {benefit}
-          </span>
-        ))}
+        {benefits.map((benefit, index) => {
+          const Icon = benefit.icon
+          return (
+            <div
+              key={index}
+              className="inline-flex items-center gap-2 mx-6 md:mx-10 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg"
+            >
+              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2.5} />
+              <span className="text-white font-semibold text-sm md:text-base drop-shadow-lg">{benefit.text}</span>
+            </div>
+          )
+        })}
         {/* Duplicate for seamless loop */}
-        {benefits.map((benefit, index) => (
-          <span
-            key={`duplicate-${index}`}
-            className="text-white font-medium text-sm sm:text-base md:text-lg mx-4 sm:mx-6 md:mx-8 drop-shadow-lg"
-          >
-            {benefit}
-          </span>
-        ))}
+        {benefits.map((benefit, index) => {
+          const Icon = benefit.icon
+          return (
+            <div
+              key={`duplicate-${index}`}
+              className="inline-flex items-center gap-2 mx-6 md:mx-10 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg"
+            >
+              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2.5} />
+              <span className="text-white font-semibold text-sm md:text-base drop-shadow-lg">{benefit.text}</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

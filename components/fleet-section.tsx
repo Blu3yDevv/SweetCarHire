@@ -3,8 +3,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Users, Fuel, Cog } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect, useRef } from "react"
 
 export function FleetSection() {
+  const [visibleCards, setVisibleCards] = useState<number[]>([])
+  const sectionRef = useRef<HTMLDivElement>(null)
+
   const vehicles = [
     {
       name: "Suzuki Dzire",
@@ -29,77 +33,110 @@ export function FleetSection() {
     },
   ]
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const cardIndex = Number.parseInt(entry.target.getAttribute("data-card-index") || "0")
+            setVisibleCards((prev) => [...new Set([...prev, cardIndex])])
+          }
+        })
+      },
+      { threshold: 0.2 },
+    )
+
+    const cards = sectionRef.current?.querySelectorAll("[data-card-index]")
+    cards?.forEach((card) => observer.observe(card))
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section id="fleet" className="py-12 md:py-20 section-gradient">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="font-poppins font-bold text-3xl md:text-4xl lg:text-5xl text-gradient mb-4">
+    <section ref={sectionRef} id="fleet" className="py-16 md:py-24 section-gradient relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-magenta/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-navy/5 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header with animation */}
+        <div className="text-center mb-16 md:mb-20">
+          <h2 className="font-poppins font-black text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-navy via-magenta to-navy bg-clip-text text-transparent mb-6">
             Our Sweet Fleet
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-            Choose from our carefully maintained vehicles, perfect for exploring the beautiful islands of Seychelles
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed">
+            Choose from our carefully maintained vehicles, perfect for exploring the beautiful islands of Seychelles.
+            Every car is hand-picked for quality, comfort, and reliability.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
           {vehicles.map((vehicle, index) => (
-            <Card key={vehicle.name} className="card-hover overflow-hidden border-0 bubble-shadow">
-              <div className="relative">
-                <img
-                  src={vehicle.image || "/placeholder.svg"}
-                  alt={vehicle.name}
-                  className="w-full h-48 md:h-56 object-cover"
-                />
-                {vehicle.popular && (
-                  <div className="absolute top-4 right-4 bg-[var(--magenta)] text-white rounded-full px-3 py-1">
-                    <span className="text-sm font-semibold">Popular</span>
-                  </div>
-                )}
-              </div>
-
-              <CardContent className="p-4 md:p-6">
-                <h3 className="font-poppins font-bold text-xl md:text-2xl mb-2">{vehicle.name}</h3>
-                <p className="text-primary font-bold text-lg md:text-xl mb-4" data-price={vehicle.basePrice}>
-                  {vehicle.price}
-                </p>
-
-                <div className="flex items-center gap-3 md:gap-4 mb-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>{vehicle.passengers}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Cog className="h-4 w-4" />
-                    <span>{vehicle.transmission}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Fuel className="h-4 w-4" />
-                    <span>{vehicle.fuel}</span>
-                  </div>
+            <div
+              key={vehicle.name}
+              data-card-index={index}
+              className={`transition-all duration-700 delay-${index * 200} ${
+                visibleCards.includes(index) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+              }`}
+            >
+              <Card className="overflow-hidden border shadow-lg hover:shadow-xl transition-all duration-300 group bg-white">
+                <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+                  <img
+                    src={vehicle.image || "/placeholder.svg"}
+                    alt={vehicle.name}
+                    className="w-full h-64 md:h-72 object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {vehicle.popular && (
+                    <div className="absolute top-4 right-4 bg-magenta text-white rounded-lg px-3 py-1.5 text-xs font-bold shadow-md">
+                      Most Popular
+                    </div>
+                  )}
                 </div>
 
-                <div className="mb-6">
-                  <h4 className="font-semibold mb-2">Features:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {vehicle.features.map((feature) => (
-                      <span
-                        key={feature}
-                        className="bg-accent/10 text-accent px-2 py-1 rounded-full text-xs font-medium"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <CardContent className="p-6 md:p-8">
+                  <h3 className="font-poppins font-bold text-2xl text-navy mb-2">{vehicle.name}</h3>
 
-                <Link
-                  href={`/booking?car=${encodeURIComponent(vehicle.name)}`}
-                  className="w-full bg-[var(--magenta)] hover:bg-[var(--magenta)]/90 text-white font-semibold text-base md:text-lg px-6 md:px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 shadow-2xl border-2 border-white/20 backdrop-blur-sm inline-block text-center"
-                >
-                  Book This Car
-                </Link>
-              </CardContent>
-            </Card>
+                  <p className="text-magenta font-black text-2xl mb-6" data-price={vehicle.basePrice}>
+                    {vehicle.price}
+                  </p>
+
+                  <div className="flex items-center justify-around gap-4 mb-6 pb-6 border-b">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Users className="h-5 w-5 text-navy" strokeWidth={2} />
+                      <span className="text-xs font-medium text-muted-foreground">{vehicle.passengers} Seats</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Cog className="h-5 w-5 text-navy" strokeWidth={2} />
+                      <span className="text-xs font-medium text-muted-foreground">{vehicle.transmission}</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Fuel className="h-5 w-5 text-navy" strokeWidth={2} />
+                      <span className="text-xs font-medium text-muted-foreground">{vehicle.fuel}</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2">
+                      {vehicle.features.map((feature) => (
+                        <span
+                          key={feature}
+                          className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/booking?car=${encodeURIComponent(vehicle.name)}`}
+                    className="w-full bg-magenta hover:bg-pink text-white font-bold text-base px-6 py-3.5 rounded-lg transition-all duration-300 hover:scale-[1.02] shadow-md hover:shadow-lg inline-block text-center"
+                  >
+                    Book This Car
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
       </div>

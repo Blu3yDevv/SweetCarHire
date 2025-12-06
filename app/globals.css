@@ -4,40 +4,40 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated design tokens to match Sweet Car Hire brand colors */
-  --background: #ffffff;
-  --foreground: #374151;
-  --card: #f9fafb;
-  --card-foreground: #4b5563;
-  --popover: #f0fdf4;
-  --popover-foreground: #374151;
+  /* Updated to more sophisticated, refined design tokens inspired by luxury automotive brands */
+  --background: #fafafa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #2d2d2d;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
   --primary: #0d2b5f;
   --primary-foreground: #ffffff;
-  --secondary: #f9fafb;
-  --secondary-foreground: #374151;
-  --muted: #e5e7eb;
-  --muted-foreground: #4b5563;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #1a1a1a;
+  --muted: #e8e8e8;
+  --muted-foreground: #6b6b6b;
   --accent: #e72c82;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #d1d5db;
-  --input: #f9fafb;
-  --ring: rgba(13, 43, 95, 0.5);
+  --border: #e0e0e0;
+  --input: #f9f9f9;
+  --ring: rgba(13, 43, 95, 0.3);
   --chart-1: #f7d21c;
   --chart-2: #e72c82;
   --chart-3: #0d2b5f;
   --chart-4: #ff6ea8;
   --chart-5: #f472b6;
-  --radius: 0.75rem;
-  --sidebar: #f9fafb;
-  --sidebar-foreground: #374151;
-  --sidebar-primary: #ffffff;
+  --radius: 1rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #f5f5f5;
   --sidebar-primary-foreground: #0d2b5f;
   --sidebar-accent: #e72c82;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #d1d5db;
-  --sidebar-ring: rgba(13, 43, 95, 0.5);
+  --sidebar-border: #e0e0e0;
+  --sidebar-ring: rgba(13, 43, 95, 0.3);
 
   /* Sweet Car Hire brand colors from logo */
   --navy: #0d2b5f;
@@ -71,7 +71,7 @@
 }
 
 @theme inline {
-  /* Updated font configuration for bubbly feel */
+  /* Updated font configuration for premium feel */
   --font-poppins: var(--font-poppins);
   --font-inter: var(--font-inter);
   --font-sans: var(--font-inter);
@@ -136,7 +136,91 @@
     scroll-padding-top: 100px;
   }
 
-  /* Added auto-scrolling animation for benefits carousel */
+  /* Added sophisticated premium animations */
+  @keyframes float-gentle {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shimmer-flow {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(231, 44, 130, 0.4), 0 0 40px rgba(231, 44, 130, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(231, 44, 130, 0.6), 0 0 60px rgba(231, 44, 130, 0.3);
+    }
+  }
+
   @keyframes scroll-left {
     0% {
       transform: translateX(0);
@@ -146,24 +230,12 @@
     }
   }
 
-  /* Added infinite scroll animation for reviews carousel */
   @keyframes scroll-infinite {
     0% {
       transform: translateX(0);
     }
     100% {
       transform: translateX(-33.333%);
-    }
-  }
-
-  /* Removed float animation to stop logo animations */
-  @keyframes glow {
-    0%,
-    100% {
-      box-shadow: 0 0 20px rgba(231, 44, 130, 0.3);
-    }
-    50% {
-      box-shadow: 0 0 40px rgba(231, 44, 130, 0.6);
     }
   }
 
@@ -289,96 +361,153 @@
   }
 }
 
-/* Enhanced custom utilities with brand colors and premium animations */
+/* Enhanced premium card styling with sophisticated shadows and transitions */
 .glass-card {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(13, 43, 95, 0.1);
+  box-shadow: 0 4px 24px rgba(13, 43, 95, 0.08), 0 12px 48px rgba(13, 43, 95, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  box-shadow: 0 8px 32px rgba(13, 43, 95, 0.12), 0 16px 64px rgba(13, 43, 95, 0.1);
+  transform: translateY(-4px);
 }
 
 /* Updated gradients to use brand colors */
 .gradient-cta {
-  background: #e72c82;
+  background: linear-gradient(135deg, #e72c82 0%, #ff6ea8 100%);
 }
 
 .gradient-secondary {
-  background: #0d2b5f;
+  background: linear-gradient(135deg, #0d2b5f 0%, #1a3d7a 100%);
 }
 
 .gradient-sunshine {
-  background: #f7d21c;
+  background: linear-gradient(135deg, #f7d21c 0%, #ffd700 100%);
   color: #0d2b5f;
 }
 
+/* Enhanced hero with parallax effect and cinematic overlay */
 .beach-hero-bg {
-  background: linear-gradient(135deg, rgba(13, 43, 95, 0.4) 0%, rgba(231, 44, 130, 0.2) 100%), url("/beach-bg.jpg")
-    center / cover;
-  background-attachment: scroll; /* Changed from fixed to scroll for mobile compatibility */
-  background-size: cover; /* Ensure full image coverage */
-  background-position: center; /* Center the image properly */
-  background-repeat: no-repeat; /* Prevent image repetition */
+  background: linear-gradient(
+      135deg,
+      rgba(13, 43, 95, 0.85) 0%,
+      rgba(13, 43, 95, 0.6) 30%,
+      rgba(231, 44, 130, 0.4) 70%,
+      rgba(231, 44, 130, 0.25) 100%
+    ), url("/beach-bg.jpg") center / cover;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.beach-hero-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(13, 43, 95, 0.2) 100%);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .beach-hero-bg {
+    background-attachment: scroll;
+  }
 }
 
 .section-gradient {
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #f8fafc 100%);
+  background: linear-gradient(180deg, #fafafa 0%, #ffffff 30%, #f8f9fa 70%, #fafafa 100%);
 }
 
-/* Enhanced hover effects with premium animations */
+/* Premium hover effects with sophisticated micro-interactions */
 .card-hover {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(231, 44, 130, 0.1) 50%, transparent 100%);
+  transition: left 0.6s ease;
+}
+
+.card-hover:hover::before {
+  left: 100%;
 }
 
 .card-hover:hover {
   transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 25px 50px rgba(13, 43, 95, 0.15);
+  box-shadow: 0 20px 60px rgba(13, 43, 95, 0.15), 0 8px 24px rgba(231, 44, 130, 0.1);
 }
 
 .bubble-shadow {
-  box-shadow: 0 10px 30px rgba(231, 44, 130, 0.2);
+  box-shadow: 0 8px 32px rgba(231, 44, 130, 0.15), 0 4px 16px rgba(13, 43, 95, 0.1);
 }
 
-/* Added premium animation classes */
+/* Added premium animation utility classes */
 .animate-scroll-left {
-  animation: scroll-left 8s linear infinite; /* Made carousel faster on mobile from 12s to 8s */
+  animation: scroll-left 12s linear infinite;
 }
 
-/* Desktop carousel speed remains the same */
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   .animate-scroll-left {
-    animation: scroll-left 12s linear infinite; /* Keep desktop speed at 12s */
-  }
-
-  .animate-scroll-infinite {
-    animation: scroll-infinite 30s linear infinite; /* Keep desktop reviews at 30s */
+    animation: scroll-left 8s linear infinite;
   }
 }
 
-/* Added infinite scroll class for reviews with mobile optimization */
 .animate-scroll-infinite {
   animation: scroll-infinite 30s linear infinite;
 }
 
 @media (max-width: 768px) {
   .animate-scroll-infinite {
-    animation: scroll-infinite 10s linear infinite; /* Faster on mobile: 10s vs 30s on desktop */
-  }
-
-  .animate-scroll-left {
-    animation: scroll-left 8s linear infinite; /* Keep benefits carousel at 8s on mobile */
+    animation: scroll-infinite 10s linear infinite;
   }
 }
 
-/* Desktop carousel speeds remain the same */
-@media (min-width: 769px) {
-  .animate-scroll-left {
-    animation: scroll-left 12s linear infinite; /* Keep desktop speed at 12s */
-  }
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
 
-  .animate-scroll-infinite {
-    animation: scroll-infinite 30s linear infinite; /* Keep desktop reviews at 30s */
-  }
+.animate-fade-in-down {
+  animation: fade-in-down 0.8s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.8s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out forwards;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 6s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer-flow 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 /* Enhanced form styling for booking page */
