@@ -13,17 +13,17 @@ export function BenefitsCarousel() {
   ]
 
   return (
-    <div className="overflow-hidden max-w-4xl mx-auto py-4">
+    <div className="relative overflow-hidden max-w-5xl mx-auto py-6">
       <div className="flex animate-scroll-left whitespace-nowrap">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon
           return (
             <div
               key={index}
-              className="inline-flex items-center gap-2 mx-6 md:mx-10 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg"
+              className="inline-flex items-center gap-3 mx-4 md:mx-6 bg-white/10 backdrop-blur-md px-6 py-3.5 rounded-full border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/15 hover:scale-[1.02]"
             >
-              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2.5} />
-              <span className="text-white font-semibold text-sm md:text-base drop-shadow-lg">{benefit.text}</span>
+              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2} />
+              <span className="text-white font-semibold text-sm md:text-base">{benefit.text}</span>
             </div>
           )
         })}
@@ -33,10 +33,10 @@ export function BenefitsCarousel() {
           return (
             <div
               key={`duplicate-${index}`}
-              className="inline-flex items-center gap-2 mx-6 md:mx-10 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg"
+              className="inline-flex items-center gap-3 mx-4 md:mx-6 bg-white/10 backdrop-blur-md px-6 py-3.5 rounded-full border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/15 hover:scale-[1.02]"
             >
-              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2.5} />
-              <span className="text-white font-semibold text-sm md:text-base drop-shadow-lg">{benefit.text}</span>
+              <Icon className="w-5 h-5 text-sunshine" strokeWidth={2} />
+              <span className="text-white font-semibold text-sm md:text-base">{benefit.text}</span>
             </div>
           )
         })}

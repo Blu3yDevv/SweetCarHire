@@ -56,7 +56,7 @@ export function Navigation() {
 
     const element = document.querySelector(href)
     if (element) {
-      const headerHeight = 80 // Reduced for mobile
+      const headerHeight = 80
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
       const offsetPosition = elementPosition - headerHeight
 
@@ -124,7 +124,6 @@ export function Navigation() {
     const handleScroll = () => {
       const scrollY = window.scrollY
 
-      // Check if we're over a light background section
       const servicesSection = document.getElementById("services")
       const locationsSection = document.getElementById("locations")
       const aboutSection = document.getElementById("about")
@@ -176,13 +175,9 @@ export function Navigation() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
 
-      console.log("[v0] Scroll position:", currentScrollY, "Last scroll:", lastScrollY)
-
       if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        console.log("[v0] Showing header")
         setIsVisible(true)
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        console.log("[v0] Hiding header")
         setIsVisible(false)
       }
 
@@ -196,56 +191,58 @@ export function Navigation() {
 
   return (
     <div>
-      {/* Desktop Navigation */}
+      {/* Desktop Navigation - unchanged */}
       <nav
-        className={`hidden md:block fixed top-2 md:top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs sm:max-w-2xl md:max-w-6xl px-2 md:px-4 transition-all duration-300 ease-out ${
+        className={`hidden md:block fixed top-3 md:top-5 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs sm:max-w-2xl md:max-w-6xl px-3 md:px-5 transition-all duration-500 ease-out ${
           isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
         }`}
       >
         <div
-          className={`glass-header rounded-full transition-all duration-300 ${
+          className={`rounded-full transition-all duration-500 ${
             isScrolled
-              ? "bg-black/20 backdrop-blur-xl shadow-2xl scale-105"
-              : "bg-black/10 backdrop-blur-md shadow-lg scale-100"
+              ? "bg-white/90 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(13,43,95,0.15)] border border-navy/5"
+              : "bg-black/10 backdrop-blur-xl shadow-lg border border-white/10"
           }`}
         >
-          <div className="flex items-center justify-between px-3 md:px-6 py-2 md:py-3">
+          <div className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4">
             <div className="flex items-center">
-              <Image src="/logo.png" alt="Sweet Car Hire" width={80} height={56} className="h-10 md:h-14 w-auto" />
+              <Image src="/logo.png" alt="Sweet Car Hire" width={80} height={56} className="h-10 md:h-12 w-auto" />
             </div>
 
-            <div className="hidden lg:flex items-center space-x-6">
+            <div className="hidden lg:flex items-center space-x-8">
               {navItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  className={`${textColor} hover:text-magenta font-medium transition-all duration-300 hover:scale-110 relative group hover:drop-shadow-lg`}
+                  className={`${isScrolled ? "text-navy" : textColor} hover:text-magenta font-medium transition-all duration-300 relative group text-[15px]`}
                 >
                   {item.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-magenta transition-all duration-300 group-hover:w-full shadow-sm"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-magenta transition-all duration-300 group-hover:w-full rounded-full"></span>
                 </a>
               ))}
             </div>
 
-            <div className="hidden lg:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-3">
               <div className="relative">
                 <button
                   onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 ${textColor} font-medium backdrop-blur-sm hover:scale-105`}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 ${
+                    isScrolled ? "bg-navy/5 hover:bg-navy/10 text-navy" : "bg-white/10 hover:bg-white/20 text-white"
+                  } font-medium text-sm`}
                 >
                   <Globe className="w-4 h-4" />
-                  <span className="text-sm">{currentLanguage}</span>
+                  <span>{currentLanguage}</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
 
                 {isLanguageOpen && (
-                  <div className="absolute top-12 right-0 w-48 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/30 overflow-hidden animate-scale-in">
+                  <div className="absolute top-14 right-0 w-48 bg-white rounded-2xl shadow-xl border border-navy/5 overflow-hidden animate-scale-in">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-magenta/10 transition-all duration-300 text-left hover:scale-105"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cream transition-all duration-300 text-left"
                       >
                         <span className="text-lg">{lang.flag}</span>
                         <span className="text-navy font-medium">{lang.name}</span>
@@ -258,39 +255,39 @@ export function Navigation() {
               <div className="relative">
                 <button
                   onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 ${textColor} font-medium backdrop-blur-sm hover:scale-105 notranslate`}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 ${
+                    isScrolled ? "bg-navy/5 hover:bg-navy/10 text-navy" : "bg-white/10 hover:bg-white/20 text-white"
+                  } font-medium text-sm notranslate`}
                 >
                   <DollarSign className="w-4 h-4" />
-                  <span className="text-sm">{currency}</span>
+                  <span>{currency}</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
 
                 {isCurrencyOpen && (
-                  <div className="absolute top-12 right-0 w-44 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/30 overflow-hidden animate-scale-in">
+                  <div className="absolute top-14 right-0 w-48 bg-white rounded-2xl shadow-xl border border-navy/5 overflow-hidden animate-scale-in">
                     {currencies.map((curr) => (
                       <button
                         key={curr.code}
                         onClick={() => handleCurrencyChange(curr.code)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-magenta/10 transition-all duration-300 text-left hover:scale-105 notranslate"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cream transition-all duration-300 text-left notranslate"
                       >
-                        <span className="text-navy font-bold">{curr.symbol}</span>
+                        <span className="text-navy font-bold w-6">{curr.symbol}</span>
                         <div>
                           <div className="text-navy font-medium text-sm">{curr.code}</div>
-                          <div className="text-gray-500 text-xs">{curr.name}</div>
+                          <div className="text-muted-foreground text-xs">{curr.name}</div>
                         </div>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="hidden lg:flex items-center space-x-3">
               <a
                 href="https://wa.me/2482821182?text=Hello%2C%20I%27m%20interested%20in%20renting%20a%20car%20from%20Sweet%20Car%20Hire"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg text-sm hover:scale-105 hover:shadow-xl"
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg text-sm hover:-translate-y-0.5"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
@@ -300,7 +297,7 @@ export function Navigation() {
 
               <a
                 href="/booking"
-                className="bg-[var(--magenta)] hover:bg-[var(--magenta)]/90 text-white font-semibold px-4 py-2 rounded-full transition-all duration-300 shadow-lg hover:scale-105"
+                className="bg-magenta hover:bg-pink text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-lg hover:-translate-y-0.5 text-sm"
               >
                 Book Now
               </a>
@@ -309,115 +306,141 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/15 backdrop-blur-xl border-b border-white/20">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center">
-            <Image src="/logo.png" alt="Sweet Car Hire" width={60} height={42} className="h-8 w-auto" />
-          </div>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50">
+        {/* Mini Header Bar */}
+        <div
+          className={`transition-all duration-300 ${
+            isScrolled ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-navy/5" : "bg-navy/80 backdrop-blur-xl"
+          }`}
+        >
+          <div className="flex items-center justify-between px-3 py-2.5">
+            {/* Logo */}
+            <Image src="/logo.png" alt="Sweet Car Hire" width={48} height={32} className="h-8 w-auto" />
 
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <button
-                onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 text-white text-sm backdrop-blur-sm flex items-center justify-center"
+            {/* Quick Actions - Unified design */}
+            <div className="flex items-center gap-2">
+              {/* WhatsApp Button */}
+              <a
+                href="https://wa.me/2482821182?text=Hello%2C%20I%27m%20interested%20in%20renting%20a%20car%20from%20Sweet%20Car%20Hire"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center shadow-sm"
+                aria-label="WhatsApp"
               >
-                <Globe className="w-4 h-4" />
-              </button>
+                <svg className="w-[18px] h-[18px] text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
+                </svg>
+              </a>
 
-              {isLanguageOpen && (
-                <div className="absolute top-8 right-0 w-40 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/30 overflow-hidden animate-scale-in">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-magenta/10 transition-all duration-300 text-left text-sm"
-                    >
-                      <span>{lang.flag}</span>
-                      <span className="text-navy">{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 text-white text-sm backdrop-blur-sm flex items-center justify-center"
+              {/* Book Now Button */}
+              <a
+                href="/booking"
+                className="h-9 px-4 rounded-xl bg-magenta text-white text-sm font-semibold shadow-sm flex items-center justify-center"
               >
-                <DollarSign className="w-4 h-4" />
+                Book
+              </a>
+
+              {/* Menu Toggle */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  isScrolled ? "bg-navy/10 text-navy" : "bg-white/20 text-white"
+                }`}
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
               </button>
-
-              {isCurrencyOpen && (
-                <div className="absolute top-8 right-0 w-36 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/30 overflow-hidden animate-scale-in">
-                  {currencies.map((curr) => (
-                    <button
-                      key={curr.code}
-                      onClick={() => handleCurrencyChange(curr.code)}
-                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-magenta/10 transition-all duration-300 text-left text-sm"
-                    >
-                      <span className="text-navy font-bold text-xs">{curr.symbol}</span>
-                      <span className="text-navy text-xs">{curr.code}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`w-10 h-10 rounded-full bg-white/30 backdrop-blur-md shadow-lg border border-white/30 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-                isMenuOpen ? "scale-110 rotate-90" : "scale-100 rotate-0"
-              }`}
-            >
-              {isMenuOpen ? <X className="h-4 w-4 text-white" /> : <Menu className="h-4 w-4 text-white" />}
-            </button>
           </div>
         </div>
 
+        {/* Dropdown Menu */}
         <div
-          className={`overflow-hidden transition-all duration-500 ease-out ${
-            isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+          className={`overflow-hidden transition-all duration-300 ease-out ${
+            isMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="bg-black/20 backdrop-blur-xl border-t border-white/30">
-            <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
+          <div className="bg-white/98 backdrop-blur-2xl border-b border-navy/10 shadow-xl">
+            <div className="p-4 space-y-1">
+              {/* Nav Links */}
               {navItems.map((item, index) => (
                 <a
                   key={item.name}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  className={`block text-white hover:text-magenta font-medium py-3 px-4 rounded-lg hover:bg-white/20 transition-all duration-300 transform hover:scale-105 ${
-                    isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
+                  className={`block text-navy font-medium py-3 px-4 rounded-xl hover:bg-cream transition-all duration-200 ${
+                    isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0"
                   }`}
-                  style={{
-                    transitionDelay: isMenuOpen ? `${index * 0.1}s` : "0s",
-                  }}
+                  style={{ transitionDelay: isMenuOpen ? `${index * 50}ms` : "0ms" }}
                 >
                   {item.name}
                 </a>
               ))}
 
-              <div className="border-t border-white/30 mt-4 pt-4 space-y-3">
-                <a
-                  href="https://wa.me/2482821182?text=Hello%2C%20I%27m%20interested%20in%20renting%20a%20car%20from%20Sweet%20Car%20Hire"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-3 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:scale-105"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
-                  </svg>
-                  WhatsApp
-                </a>
+              {/* Divider */}
+              <div className="h-px bg-navy/10 my-3" />
 
-                <a
-                  href="/booking"
-                  className="w-full bg-[var(--magenta)] hover:bg-[var(--magenta)]/90 text-white font-semibold px-4 py-3 rounded-full transition-all duration-300 shadow-lg block text-center hover:scale-105"
-                >
-                  Book Now
-                </a>
+              {/* Language & Currency Row */}
+              <div className="flex gap-2 px-2">
+                {/* Language Selector */}
+                <div className="relative flex-1">
+                  <button
+                    onClick={() => {
+                      setIsLanguageOpen(!isLanguageOpen)
+                      setIsCurrencyOpen(false)
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cream text-navy font-medium text-sm"
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span>{currentLanguage}</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform ${isLanguageOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isLanguageOpen && (
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-xl border border-navy/10 overflow-hidden z-50">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => handleLanguageChange(lang.code)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cream transition-colors text-left text-sm"
+                        >
+                          <span>{lang.flag}</span>
+                          <span className="text-navy">{lang.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Currency Selector */}
+                <div className="relative flex-1">
+                  <button
+                    onClick={() => {
+                      setIsCurrencyOpen(!isCurrencyOpen)
+                      setIsLanguageOpen(false)
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cream text-navy font-medium text-sm notranslate"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    <span>{currency}</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform ${isCurrencyOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isCurrencyOpen && (
+                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-xl border border-navy/10 overflow-hidden z-50">
+                      {currencies.map((curr) => (
+                        <button
+                          key={curr.code}
+                          onClick={() => handleCurrencyChange(curr.code)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cream transition-colors text-left text-sm notranslate"
+                        >
+                          <span className="text-navy font-bold">{curr.symbol}</span>
+                          <span className="text-navy">{curr.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -376,4 +376,4 @@ Brevo (formerly Sendinblue) is the best choice because:
 9. **Flexible**: Use personal email for testing, custom domain for production
 \`\`\`
 
-```env file="" isHidden
+\`\`\`env file="" isHidden

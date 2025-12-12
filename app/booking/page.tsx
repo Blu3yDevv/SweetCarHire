@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { computePrice, type BookingInput as PricingInput } from "@/lib/pricing"
 import { useCurrency } from "@/lib/currency" // Fixed import to use correct path
+import { MobileBookingSummary } from "@/components/mobile-booking-summary"
 
 const carTypes = [
   { id: "suzuki-dzire", name: "Suzuki Dzire", dailyRate: 45, passengers: 4, transmission: "Automatic" },
@@ -70,12 +71,24 @@ export default function BookingPage() {
   const customLocationParam = searchParams.get("customLocation")
 
   const [currentStep, setCurrentStep] = useState(0)
+
+  const getDefaultPickupDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split("T")[0]
+  }
+
+  const getDefaultDropoffDate = () => {
+    const nextWeek = new Date()
+    nextWeek.setDate(nextWeek.getDate() + 8)
+    return nextWeek.toISOString().split("T")[0]
+  }
+
   const [formData, setFormData] = useState({
-    // Changed from bookingData to formData
-    pickupDate: "",
-    pickupTime: "",
-    dropoffDate: "",
-    dropoffTime: "",
+    pickupDate: getDefaultPickupDate(),
+    pickupTime: "10:00",
+    dropoffDate: getDefaultDropoffDate(),
+    dropoffTime: "10:00",
     pickupLocation: preSelectedLocation === "custom" ? "Custom Location" : preSelectedLocation || "",
     dropoffLocation: preSelectedLocation === "custom" ? "Custom Location" : preSelectedLocation || "",
     customPickupLocation: customLocationParam || "",
@@ -1061,7 +1074,7 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 pt-16 md:pt-24">
+    <div className="min-h-screen bg-gradient-to-br from-cream via-white to-ocean/10 pb-20 lg:pb-0">
       <div className="container mx-auto px-4 md:px-4 py-4 md:py-8 max-w-7xl">
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-4xl font-bold text-navy mb-2 md:mb-4">Complete Your Booking</h1>
@@ -1215,6 +1228,16 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+      <MobileBookingSummary
+        carType={formData.carType}
+        dailyRate={carTypes.find((c) => c.name === formData.carType)?.dailyRate || 0}
+        rentalDays={rentalDays}
+        childSeat={formData.childSeat}
+        additionalDriver={formData.additionalDriver}
+        lateFee={lateFee}
+        totalPrice={totalPrice}
+        formatPrice={formatPrice}
+      />
     </div>
   )
 }

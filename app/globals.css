@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to more sophisticated, refined design tokens inspired by luxury automotive brands */
-  --background: #fafafa;
+  /* Premium refined design tokens - cream/warm palette with sophisticated touches */
+  --background: #fdf8f3;
   --foreground: #1a1a1a;
   --card: #ffffff;
   --card-foreground: #2d2d2d;
@@ -13,23 +13,23 @@
   --popover-foreground: #1a1a1a;
   --primary: #0d2b5f;
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
+  --secondary: #f8f4ef;
   --secondary-foreground: #1a1a1a;
-  --muted: #e8e8e8;
+  --muted: #f0ebe4;
   --muted-foreground: #6b6b6b;
   --accent: #e72c82;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e0e0e0;
-  --input: #f9f9f9;
-  --ring: rgba(13, 43, 95, 0.3);
+  --border: #e8e2da;
+  --input: #faf7f2;
+  --ring: rgba(13, 43, 95, 0.2);
   --chart-1: #f7d21c;
   --chart-2: #e72c82;
   --chart-3: #0d2b5f;
   --chart-4: #ff6ea8;
   --chart-5: #f472b6;
-  --radius: 1rem;
+  --radius: 1.25rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1a1a1a;
   --sidebar-primary: #f5f5f5;
@@ -39,13 +39,15 @@
   --sidebar-border: #e0e0e0;
   --sidebar-ring: rgba(13, 43, 95, 0.3);
 
-  /* Sweet Car Hire brand colors from logo */
+  /* Sweet Car Hire brand colors */
   --navy: #0d2b5f;
   --magenta: #e72c82;
   --pink: #ff6ea8;
   --sunshine: #f7d21c;
   --charcoal: #1f2937;
   --white: #ffffff;
+  --cream: #fdf8f3;
+  --warm-gray: #f0ebe4;
 }
 
 .dark {
@@ -120,6 +122,8 @@
   --color-sunshine: var(--sunshine);
   --color-charcoal: var(--charcoal);
   --color-white: var(--white);
+  --color-cream: var(--cream);
+  --color-warm-gray: var(--warm-gray);
 }
 
 @layer base {
@@ -130,7 +134,7 @@
     @apply bg-background text-foreground;
   }
 
-  /* Enhanced smooth scrolling with offset for fixed header */
+  /* Enhanced smooth scrolling with premium easing */
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 100px;
@@ -361,28 +365,42 @@
   }
 }
 
-/* Enhanced premium card styling with sophisticated shadows and transitions */
+/* Premium glass card with refined shadows and warm tones */
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(13, 43, 95, 0.1);
-  box-shadow: 0 4px 24px rgba(13, 43, 95, 0.08), 0 12px 48px rgba(13, 43, 95, 0.06);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(13, 43, 95, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 10px 20px -5px rgba(13, 43, 95, 0.06), 0 20px 40px -10px
+    rgba(13, 43, 95, 0.04);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .glass-card:hover {
-  box-shadow: 0 8px 32px rgba(13, 43, 95, 0.12), 0 16px 64px rgba(13, 43, 95, 0.1);
-  transform: translateY(-4px);
+  box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.04), 0 16px 32px -8px rgba(13, 43, 95, 0.08), 0 32px 64px -16px
+    rgba(231, 44, 130, 0.06);
+  transform: translateY(-2px);
 }
 
-/* Updated gradients to use brand colors */
+/* Refined CTA gradients */
 .gradient-cta {
-  background: linear-gradient(135deg, #e72c82 0%, #ff6ea8 100%);
+  background: linear-gradient(135deg, #e72c82 0%, #ff6ea8 50%, #e72c82 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, #0d2b5f 0%, #1a3d7a 100%);
+  background: linear-gradient(135deg, #0d2b5f 0%, #1a4a8a 100%);
 }
 
 .gradient-sunshine {
@@ -390,14 +408,14 @@
   color: #0d2b5f;
 }
 
-/* Enhanced hero with parallax effect and cinematic overlay */
+/* Enhanced hero with cinematic depth */
 .beach-hero-bg {
   background: linear-gradient(
-      135deg,
-      rgba(13, 43, 95, 0.85) 0%,
-      rgba(13, 43, 95, 0.6) 30%,
-      rgba(231, 44, 130, 0.4) 70%,
-      rgba(231, 44, 130, 0.25) 100%
+      160deg,
+      rgba(13, 43, 95, 0.88) 0%,
+      rgba(13, 43, 95, 0.65) 25%,
+      rgba(231, 44, 130, 0.35) 60%,
+      rgba(231, 44, 130, 0.2) 100%
     ), url("/beach-bg.jpg") center / cover;
   background-attachment: fixed;
   position: relative;
@@ -420,39 +438,38 @@
   }
 }
 
+/* Premium section styling with warm gradient */
 .section-gradient {
-  background: linear-gradient(180deg, #fafafa 0%, #ffffff 30%, #f8f9fa 70%, #fafafa 100%);
+  background: linear-gradient(180deg, var(--cream) 0%, #ffffff 30%, var(--warm-gray) 70%, var(--cream) 100%);
 }
 
-/* Premium hover effects with sophisticated micro-interactions */
+/* Premium card hover with subtle lift */
 .card-hover {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   position: relative;
-  overflow: hidden;
 }
 
-.card-hover::before {
+.card-hover::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(231, 44, 130, 0.1) 50%, transparent 100%);
-  transition: left 0.6s ease;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  box-shadow: 0 25px 50px -12px rgba(231, 44, 130, 0.15);
+  transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.card-hover:hover::before {
-  left: 100%;
+.card-hover:hover::after {
+  opacity: 1;
 }
 
 .card-hover:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(13, 43, 95, 0.15), 0 8px 24px rgba(231, 44, 130, 0.1);
+  transform: translateY(-4px);
 }
 
+/* Refined bubble shadow */
 .bubble-shadow {
-  box-shadow: 0 8px 32px rgba(231, 44, 130, 0.15), 0 4px 16px rgba(13, 43, 95, 0.1);
+  box-shadow: 0 4px 20px rgba(13, 43, 95, 0.06), 0 8px 40px rgba(231, 44, 130, 0.04);
 }
 
 /* Added premium animation utility classes */
@@ -742,4 +759,102 @@
   background: rgba(231, 44, 130, 0.05);
   transform: translateY(-4px);
   box-shadow: 0 15px 35px rgba(231, 44, 130, 0.2);
+}
+
+/* New premium button styles */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.btn-premium::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-premium:hover::before {
+  left: 100%;
+}
+
+.btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px currentColor;
+}
+
+/* Premium text gradient */
+.text-gradient-premium {
+  background: linear-gradient(135deg, #0d2b5f 0%, #e72c82 50%, #0d2b5f 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientText 6s ease infinite;
+}
+
+@keyframes gradientText {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Subtle float animation for decorative elements */
+@keyframes subtleFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-subtle-float {
+  animation: subtleFloat 6s ease-in-out infinite;
+}
+
+/* Premium icon container */
+.icon-premium {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.icon-premium::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(231, 44, 130, 0.1), rgba(13, 43, 95, 0.1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.icon-premium:hover::before {
+  opacity: 1;
+}
+
+/* Refined divider line */
+.divider-premium {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(13, 43, 95, 0.1) 20%,
+    rgba(231, 44, 130, 0.2) 50%,
+    rgba(13, 43, 95, 0.1) 80%,
+    transparent
+  );
 }
