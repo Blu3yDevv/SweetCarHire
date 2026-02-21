@@ -148,36 +148,7 @@ export default function BookingPage() {
     return pickup.toISOString().split("T")[0]
   }
 
-  useEffect(() => {
-    if (formData.pickupDate && formData.pickupTime && formData.dropoffDate && formData.dropoffTime) {
-      try {
-        const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`)
-        const dropoffDateTime = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
-
-        if (dropoffDateTime <= pickupDateTime) {
-          console.log("[v0] Drop-off time is not after pickup time, skipping calculation")
-          return
-        }
-
-        const timeDiffMs = dropoffDateTime.getTime() - pickupDateTime.getTime()
-        const hoursDiff = timeDiffMs / (1000 * 60 * 60)
-
-        // Same-day (< 24 hours) = 1 day, otherwise ceil(hours/24)
-        const days = Math.max(1, Math.ceil(hoursDiff / 24))
-
-        console.log("[v0] Duration calculation:", {
-          pickup: pickupDateTime.toISOString(),
-          dropoff: dropoffDateTime.toISOString(),
-          hoursDiff: hoursDiff.toFixed(2),
-          calculatedDays: days,
-        })
-
-        setRentalDays(days)
-      } catch (error) {
-        console.error("[v0] Date calculation error:", error)
-      }
-    }
-  }, [formData.pickupDate, formData.pickupTime, formData.dropoffDate, formData.dropoffTime])
+  // Day calculation is handled by the pricing useEffect below via computePrice/computeRentalDays
 
   useEffect(() => {
     const selectedCar = carTypes.find((car) => car.name === formData.carType)
@@ -190,16 +161,6 @@ export default function BookingPage() {
       console.log("[v0] Drop-off time is not after pickup time, skipping pricing calculation")
       return
     }
-
-    const hoursDiff = (dropoffDateTime.getTime() - pickupDateTime.getTime()) / (1000 * 60 * 60)
-    const calculatedDays = Math.max(1, Math.ceil(hoursDiff / 24))
-
-    console.log("[v0] Duration calculation:", {
-      pickup: pickupDateTime.toISOString(),
-      dropoff: dropoffDateTime.toISOString(),
-      hoursDiff: hoursDiff.toFixed(2),
-      calculatedDays,
-    })
 
     const pricingInput: PricingInput = {
       ratePerDay: selectedCar.dailyRate, // Changed from price to dailyRate
@@ -1187,17 +1148,11 @@ export default function BookingPage() {
                 <div className="mb-4 pb-4 border-b">
                   <div className="flex justify-between text-sm md:text-base text-amber-600">
                     <span>Late Return Fee</span>
-                    <span>{formatPrice(lateFee)}</span> {/* Use formatPrice */}
+                    <span>{formatPrice(lateFee)}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Dropoff time is after pickup time on final day</p>
                 </div>
               )}
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between font-semibold">
-                  <span>Subtotal:</span>
-                  <span>{formatPrice(totalPrice - (lateFee || 0))}</span> {/* Use formatPrice */}
-                </div>
-              </div>
               <div className="flex justify-between text-lg md:text-xl font-bold text-magenta pt-4 border-t">
                 <span>Total:</span>
                 <span>{formatPrice(totalPrice)}</span> {/* Use formatPrice */}
@@ -1205,8 +1160,7 @@ export default function BookingPage() {
               {lateFee > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-xs text-amber-800">
-                    * Late return fee ({formatPrice(lateFee)}) applies if returning after pickup time on final day. This
-                    fee is paid separately upon return.
+                    * Late return fee of {formatPrice(lateFee)} included because dropoff time is after pickup time.
                   </p>
                 </div>
               )}

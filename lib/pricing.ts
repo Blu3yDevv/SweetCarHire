@@ -83,24 +83,20 @@ export function computeRentalDays(pickupDateTime: Date, dropoffDateTime: Date): 
 
   const hours = (dropoffDateTime.getTime() - pickupDateTime.getTime()) / (1000 * 60 * 60)
 
-  // Calculate full 24-hour periods (floor, not ceil)
-  const fullDays = Math.floor(hours / 24)
+  // Use ceil so any partial day counts as a full rental day
+  // Example: 71 hours (Apr 27 15:00 → Apr 30 14:00) = ceil(71/24) = 3 days
+  const rentalDays = Math.max(1, Math.ceil(hours / 24))
 
-  // Calculate remaining hours after full days
-  const remainingHours = hours % 24
-
-  // Minimum 1 day rental
-  const rentalDays = Math.max(1, fullDays)
-
-  // If there are remaining hours beyond full days AND we have at least 1 full day, charge late fee
-  // Special case: if rental is less than 24 hours, no late fee (counts as 1 day, no overage)
-  let lateFee = 0
-  if (fullDays >= 1 && remainingHours > 0) {
-    lateFee = LATE_RETURN_FEE
-  }
+  // Late fee: compare TIME-OF-DAY only
+  // If dropoff hour:minute is strictly AFTER pickup hour:minute, charge late fee
+  // Example: Pickup 15:00 → Dropoff 16:00 on any day = late fee
+  // Example: Pickup 15:00 → Dropoff 14:00 on any day = no late fee
+  const pickupMinutes = pickupDateTime.getHours() * 60 + pickupDateTime.getMinutes()
+  const dropoffMinutes = dropoffDateTime.getHours() * 60 + dropoffDateTime.getMinutes()
+  const lateFee = dropoffMinutes > pickupMinutes ? LATE_RETURN_FEE : 0
 
   console.log(
-    `[v0] Rental calculation: ${hours.toFixed(2)} hours = ${rentalDays} days + €${lateFee} late fee (${remainingHours.toFixed(2)} hours over)`,
+    `[v0] Rental calculation: ${hours.toFixed(2)} hours = ${rentalDays} days + €${lateFee} late fee (pickup ${pickupDateTime.getHours()}:${String(pickupDateTime.getMinutes()).padStart(2, "0")} vs dropoff ${dropoffDateTime.getHours()}:${String(dropoffDateTime.getMinutes()).padStart(2, "0")})`,
   )
 
   return { days: rentalDays, lateFee }
@@ -122,7 +118,7 @@ export function computePrice(payload: LegacyBookingInput): BookingPrice {
   }
 
   const subtotal = payload.ratePerDay * days + extrasTotal
-  const total = Math.round(subtotal * 100) / 100
+  const total = Math.round((subtotal + lateFee) * 100) / 100
 
   return {
     rentalDays: days,
