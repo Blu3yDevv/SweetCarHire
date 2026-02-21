@@ -148,7 +148,19 @@ export default function BookingPage() {
     return pickup.toISOString().split("T")[0]
   }
 
-  // Day calculation is handled by the pricing useEffect below via computePrice/computeRentalDays
+  // Calculate rental days from dates alone (before car is selected)
+  useEffect(() => {
+    if (formData.pickupDate && formData.pickupTime && formData.dropoffDate && formData.dropoffTime) {
+      try {
+        const pickupDT = new Date(`${formData.pickupDate}T${formData.pickupTime}`)
+        const dropoffDT = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
+        if (dropoffDT > pickupDT) {
+          const hours = (dropoffDT.getTime() - pickupDT.getTime()) / (1000 * 60 * 60)
+          setRentalDays(Math.max(1, Math.ceil(hours / 24)))
+        }
+      } catch {}
+    }
+  }, [formData.pickupDate, formData.pickupTime, formData.dropoffDate, formData.dropoffTime])
 
   useEffect(() => {
     const selectedCar = carTypes.find((car) => car.name === formData.carType)
