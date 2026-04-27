@@ -101,22 +101,21 @@ export function MobileBookingSummary({
             </div>
           )}
 
-          {/* Late fee */}
-          {lateFee > 0 && (
-            <div className="mb-5 pb-5 border-b border-navy/10">
-              <div className="flex justify-between text-sm text-amber-600">
-                <span>Late Return Fee</span>
-                <span>{formatPrice(lateFee)}</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Dropoff after pickup time on final day</p>
-            </div>
-          )}
-
           {/* Total */}
           <div className="flex justify-between text-xl font-bold text-magenta mb-5">
             <span>Total:</span>
             <span>{formatPrice(totalPrice)}</span>
           </div>
+
+          {/* Late fee notice */}
+          {lateFee > 0 && (
+            <div className="mb-5 pb-5 border-b border-navy/10">
+              <p className="text-xs font-semibold text-amber-700 mb-1">⚠ Late Drop-off Fee</p>
+              <p className="text-xs text-muted-foreground">
+                If you return the car after the scheduled pickup time on the final day, an additional fee of {formatPrice(lateFee)} will be charged.
+              </p>
+            </div>
+          )}
 
           {/* Benefits */}
           <div className="bg-cream/50 rounded-xl p-4 space-y-2">

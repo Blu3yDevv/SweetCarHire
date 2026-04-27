@@ -120,7 +120,6 @@ export default function BookingPage() {
 
   useEffect(() => {
     const handleCurrencyChange = () => {
-      console.log("[v0] Currency changed, updating prices...")
       setForceUpdate((prev) => prev + 1)
     }
 
@@ -130,7 +129,6 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (preSelectedCar && carTypes.some((car) => car.name === preSelectedCar)) {
-      console.log("[v0] Pre-selected car from URL:", preSelectedCar)
       setFormData((prev) => ({ ...prev, carType: preSelectedCar }))
       setCurrentStep(0)
     }
@@ -148,34 +146,17 @@ export default function BookingPage() {
     return pickup.toISOString().split("T")[0]
   }
 
+  // Calculate rental days from dates alone (before car is selected)
   useEffect(() => {
     if (formData.pickupDate && formData.pickupTime && formData.dropoffDate && formData.dropoffTime) {
       try {
-        const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`)
-        const dropoffDateTime = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
-
-        if (dropoffDateTime <= pickupDateTime) {
-          console.log("[v0] Drop-off time is not after pickup time, skipping calculation")
-          return
+        const pickupDT = new Date(`${formData.pickupDate}T${formData.pickupTime}`)
+        const dropoffDT = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
+        if (dropoffDT > pickupDT) {
+          const hours = (dropoffDT.getTime() - pickupDT.getTime()) / (1000 * 60 * 60)
+          setRentalDays(Math.max(1, Math.floor(hours / 24)))
         }
-
-        const timeDiffMs = dropoffDateTime.getTime() - pickupDateTime.getTime()
-        const hoursDiff = timeDiffMs / (1000 * 60 * 60)
-
-        // Same-day (< 24 hours) = 1 day, otherwise ceil(hours/24)
-        const days = Math.max(1, Math.ceil(hoursDiff / 24))
-
-        console.log("[v0] Duration calculation:", {
-          pickup: pickupDateTime.toISOString(),
-          dropoff: dropoffDateTime.toISOString(),
-          hoursDiff: hoursDiff.toFixed(2),
-          calculatedDays: days,
-        })
-
-        setRentalDays(days)
-      } catch (error) {
-        console.error("[v0] Date calculation error:", error)
-      }
+      } catch {}
     }
   }, [formData.pickupDate, formData.pickupTime, formData.dropoffDate, formData.dropoffTime])
 
@@ -187,36 +168,20 @@ export default function BookingPage() {
     const dropoffDateTime = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
 
     if (dropoffDateTime <= pickupDateTime) {
-      console.log("[v0] Drop-off time is not after pickup time, skipping pricing calculation")
       return
     }
 
-    const hoursDiff = (dropoffDateTime.getTime() - pickupDateTime.getTime()) / (1000 * 60 * 60)
-    const calculatedDays = Math.max(1, Math.ceil(hoursDiff / 24))
-
-    console.log("[v0] Duration calculation:", {
-      pickup: pickupDateTime.toISOString(),
-      dropoff: dropoffDateTime.toISOString(),
-      hoursDiff: hoursDiff.toFixed(2),
-      calculatedDays,
-    })
-
     const pricingInput: PricingInput = {
-      ratePerDay: selectedCar.dailyRate, // Changed from price to dailyRate
+      ratePerDay: selectedCar.dailyRate,
       pickupDate: formData.pickupDate,
       pickupTime: formData.pickupTime,
       dropoffDate: formData.dropoffDate,
       dropoffTime: formData.dropoffTime,
       childSeat: formData.childSeat,
       additionalDriver: formData.additionalDriver,
-      childSeatPerDay: 5,
-      additionalDriverPerDay: 10,
-      vatRate: 0.15,
     }
 
     const pricing = computePrice(pricingInput)
-
-    console.log("[v0] Pricing calculation:", pricing)
 
     setRentalDays(pricing.rentalDays)
     setLateFee(pricing.lateFee) // Set lateFee state
@@ -405,8 +370,8 @@ export default function BookingPage() {
         flightNumber: formData.flightNumber,
         pickupDate: formData.pickupDate,
         pickupTime: formData.pickupTime,
-        returnDate: formData.dropoffDate,
-        returnTime: formData.dropoffTime,
+        dropoffDate: formData.dropoffDate,
+        dropoffTime: formData.dropoffTime,
         pickupLocation:
           formData.pickupLocation === "Custom Location" ? formData.customPickupLocation : formData.pickupLocation,
         dropoffLocation:
@@ -499,11 +464,26 @@ export default function BookingPage() {
     const dropoffLocation =
       formData.dropoffLocation === "Custom Location" ? formData.customDropoffLocation : formData.dropoffLocation
 
-    // Removed pricingBreakdown state, using calculated values directly
+    // Always recompute from source of truth so voucher numbers are consistent
+    const pricing = selectedCar
+      ? computePrice({
+          ratePerDay: selectedCar.dailyRate,
+          pickupDate: formData.pickupDate,
+          pickupTime: formData.pickupTime,
+          dropoffDate: formData.dropoffDate,
+          dropoffTime: formData.dropoffTime,
+          childSeat: formData.childSeat,
+          additionalDriver: formData.additionalDriver,
+        })
+      : null
+
     const basePricePerDay = selectedCar ? selectedCar.dailyRate : 0
-    const basePrice = basePricePerDay * rentalDays
-    const childSeatTotal = formData.childSeat ? 5 : 0
-    const additionalDriverTotal = formData.additionalDriver ? 10 : 0
+    const computedDays = pricing ? pricing.rentalDays : rentalDays
+    const basePrice = pricing ? pricing.basePrice : basePricePerDay * computedDays
+    const childSeatTotal = pricing ? pricing.childSeatFee : 0
+    const additionalDriverTotal = pricing ? pricing.additionalDriverFee : 0
+    const computedTotal = pricing ? pricing.total : totalPrice
+    const computedLateFee = pricing ? pricing.lateFee : lateFee
 
     const voucherHTML = `<!DOCTYPE html>
 <html>
@@ -553,7 +533,7 @@ export default function BookingPage() {
     <div class="section-title">Rental Details</div>
     <div class="info-grid">
       <div class="info-item"><span class="label">Vehicle:</span> <span class="value">${formData.carType}</span></div>
-      <div class="info-item"><span class="label">Duration:</span> <span class="value">${rentalDays} day${rentalDays > 1 ? "s" : ""}</span></div>
+      <div class="info-item"><span class="label">Duration:</span> <span class="value">${computedDays} day${computedDays > 1 ? "s" : ""}</span></div>
       <div class="info-item"><span class="label">Pickup:</span> <span class="value">${formData.pickupDate} at ${formData.pickupTime}</span></div>
       <div class="info-item"><span class="label">Drop-off:</span> <span class="value">${formData.dropoffDate} at ${formData.dropoffTime}</span></div>
       <div class="info-item"><span class="label">Pickup Location:</span> <span class="value">${pickupLocation}</span></div>
@@ -565,18 +545,21 @@ export default function BookingPage() {
     <div class="section-title">Pricing Breakdown</div>
     <div class="pricing">
       <div class="pricing-row">
-        <span>Car Rental (€${basePricePerDay}/day × ${rentalDays} day${rentalDays > 1 ? "s" : ""})</span>
-        <span>€${basePrice}</span>
+        <span>Car Rental (€${basePricePerDay}/day × ${computedDays} day${computedDays > 1 ? "s" : ""})</span>
+        <span>€${basePrice.toFixed(2)}</span>
       </div>
-      ${lateFee > 0 ? `<div class="pricing-row"><span>Late Return Fee</span><span>€${lateFee}</span></div>` : ""}
-      ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (one-time fee)</span><span>€${childSeatTotal}</span></div>` : ""}
-      ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (one-time fee)</span><span>€${additionalDriverTotal}</span></div>` : ""}
+      ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (selected extra)</span><span>€${childSeatTotal.toFixed(2)}</span></div>` : ""}
+      ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (selected extra)</span><span>€${additionalDriverTotal.toFixed(2)}</span></div>` : ""}
       <div class="pricing-row total">
         <span>TOTAL AMOUNT</span>
-        <span>€${totalPrice}</span>
+        <span>€${computedTotal.toFixed(2)}</span>
       </div>
     </div>
-  </div>
+
+  ${computedLateFee > 0 ? `<div class="important" style="background-color: #fef3c7; border-left: 4px solid #d97706;">
+    <strong>Late Drop-off Fee Notice</strong>
+    <p style="margin:10px 0 0 0;">If you return the car after your agreed pickup time (${formData.pickupTime}) on the final day, an additional fee of €${computedLateFee.toFixed(2)} may be charged.</p>
+  </div>` : ""}
 
   <div class="important">
     <strong>✅ Your booking has been confirmed!</strong>
@@ -1183,30 +1166,15 @@ export default function BookingPage() {
                   )}
                 </div>
               )}
-              {lateFee > 0 && (
-                <div className="mb-4 pb-4 border-b">
-                  <div className="flex justify-between text-sm md:text-base text-amber-600">
-                    <span>Late Return Fee</span>
-                    <span>{formatPrice(lateFee)}</span> {/* Use formatPrice */}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Dropoff time is after pickup time on final day</p>
-                </div>
-              )}
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between font-semibold">
-                  <span>Subtotal:</span>
-                  <span>{formatPrice(totalPrice - (lateFee || 0))}</span> {/* Use formatPrice */}
-                </div>
-              </div>
               <div className="flex justify-between text-lg md:text-xl font-bold text-magenta pt-4 border-t">
                 <span>Total:</span>
                 <span>{formatPrice(totalPrice)}</span> {/* Use formatPrice */}
               </div>
               {lateFee > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs text-amber-800">
-                    * Late return fee ({formatPrice(lateFee)}) applies if returning after pickup time on final day. This
-                    fee is paid separately upon return.
+                  <p className="text-xs text-amber-800 font-semibold mb-1">⚠ Late Drop-off Fee Notice</p>
+                  <p className="text-xs text-amber-700">
+                    If you return the car after the scheduled pickup time on the final day, an additional fee of {formatPrice(lateFee)} will be charged.
                   </p>
                 </div>
               )}
