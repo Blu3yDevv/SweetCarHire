@@ -1,0 +1,45 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Booking {
+  id                 String         @id @default(cuid())
+  createdAt          DateTime       @default(now())
+  customerName       String
+  customerEmail      String
+  whatsappNumber     String
+  country            String
+  flightNumber       String?
+  pickupDate         DateTime
+  pickupTime         String
+  returnDate         DateTime
+  returnTime         String
+  pickupLocation     String
+  dropoffLocation    String
+  carId              String
+  carName            String
+  currency           String         // e.g., EUR/USD/SCR
+  totalAmountMinor   Int            // store in minor units (cents)
+  depositPercent     Int            @default(15)
+  depositAmountMinor Int
+  status             String         @default("PENDING") // PENDING | DEPOSIT_PAID | CANCELED | REFUNDED
+  paypalOrderId      String?        @unique
+  paypalCaptureId    String?
+  childSeat          Boolean        @default(false)
+  additionalDriver   Boolean        @default(false)
+  paymentEvents      PaymentEvent[]
+}
+
+model PaymentEvent {
+  id        String   @id @default(cuid())
+  bookingId String
+  type      String   // ORDER_CREATED | CAPTURE_COMPLETED | CAPTURE_DENIED | REFUND_COMPLETED
+  raw       String   // JSON string
+  createdAt DateTime @default(now())
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+}

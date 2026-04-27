@@ -1,0 +1,12 @@
+{
+  "name": "sweetcarhire-root",
+  "private": true,
+  "scripts": {
+    "install:app": "pnpm --dir SweetCarHire-main install",
+    "predev": "pnpm --dir SweetCarHire-main install",
+    "dev": "pnpm --dir SweetCarHire-main dev",
+    "prebuild": "pnpm --dir SweetCarHire-main install",
+    "build": "pnpm --dir SweetCarHire-main build",
+    "start": "pnpm --dir SweetCarHire-main start"
+  }
+}
