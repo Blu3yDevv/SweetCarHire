@@ -64,6 +64,9 @@ export interface BookingInput {
 export interface BookingPrice {
   rentalDays: number
   basePerDay: number
+  basePrice: number        // basePerDay * rentalDays
+  childSeatFee: number     // 0 or CHILD_SEAT_FEE
+  additionalDriverFee: number  // 0 or ADDL_DRIVER_FEE
   extrasTotal: number
   lateFee: number
   subtotal: number
@@ -154,13 +157,20 @@ export function computePrice(payload: BookingInput): BookingPrice {
     (payload.childSeat ? CHILD_SEAT_FEE : 0) +
     (payload.additionalDriver ? ADDL_DRIVER_FEE : 0)
 
-  const subtotal = Math.round((payload.ratePerDay * days + extrasTotal) * 100) / 100
+  const basePrice = Math.round(payload.ratePerDay * days * 100) / 100
+  const childSeatFee = payload.childSeat ? CHILD_SEAT_FEE : 0
+  const additionalDriverFee = payload.additionalDriver ? ADDL_DRIVER_FEE : 0
+  const extrasTotal = Math.round((childSeatFee + additionalDriverFee) * 100) / 100
+  const subtotal = Math.round((basePrice + extrasTotal) * 100) / 100
   const total = Math.round((subtotal + lateFee) * 100) / 100
 
   return {
     rentalDays: days,
     basePerDay: Math.round(payload.ratePerDay * 100) / 100,
-    extrasTotal: Math.round(extrasTotal * 100) / 100,
+    basePrice,
+    childSeatFee,
+    additionalDriverFee,
+    extrasTotal,
     lateFee: Math.round(lateFee * 100) / 100,
     subtotal,
     total,
