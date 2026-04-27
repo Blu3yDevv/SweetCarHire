@@ -129,7 +129,6 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (preSelectedCar && carTypes.some((car) => car.name === preSelectedCar)) {
-      console.log("[v0] Pre-selected car from URL:", preSelectedCar)
       setFormData((prev) => ({ ...prev, carType: preSelectedCar }))
       setCurrentStep(0)
     }
@@ -155,7 +154,7 @@ export default function BookingPage() {
         const dropoffDT = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
         if (dropoffDT > pickupDT) {
           const hours = (dropoffDT.getTime() - pickupDT.getTime()) / (1000 * 60 * 60)
-          setRentalDays(Math.max(1, Math.ceil(hours / 24)))
+          setRentalDays(Math.max(1, Math.floor(hours / 24)))
         }
       } catch {}
     }
@@ -169,7 +168,6 @@ export default function BookingPage() {
     const dropoffDateTime = new Date(`${formData.dropoffDate}T${formData.dropoffTime}`)
 
     if (dropoffDateTime <= pickupDateTime) {
-      console.log("[v0] Drop-off time is not after pickup time, skipping pricing calculation")
       return
     }
 
@@ -547,20 +545,6 @@ export default function BookingPage() {
     <strong>⚠ Late Drop-off Fee Notice</strong>
     <p style="margin:10px 0 0 0;">If you return the car after the scheduled pickup time on the final day, an additional fee of €${lateFee.toFixed(2)} will be charged.</p>
   </div>` : ""}
-
-  <div class="important">
-    <strong>✅ Your booking has been confirmed!</strong>
-    <p style="margin:10px 0 0 0;">Our team will contact you within 24 hours to arrange payment and finalize details. If you have any questions, please contact us via WhatsApp: +248 2821182</p>
-  </div>
-      ${lateFee > 0 ? `<div class="pricing-row"><span>Late Return Fee</span><span>€${lateFee}</span></div>` : ""}
-      ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (one-time fee)</span><span>€${childSeatTotal}</span></div>` : ""}
-      ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (one-time fee)</span><span>€${additionalDriverTotal}</span></div>` : ""}
-      <div class="pricing-row total">
-        <span>TOTAL AMOUNT</span>
-        <span>€${totalPrice}</span>
-      </div>
-    </div>
-  </div>
 
   <div class="important">
     <strong>✅ Your booking has been confirmed!</strong>
