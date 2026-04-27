@@ -120,7 +120,6 @@ export default function BookingPage() {
 
   useEffect(() => {
     const handleCurrencyChange = () => {
-      console.log("[v0] Currency changed, updating prices...")
       setForceUpdate((prev) => prev + 1)
     }
 
@@ -175,21 +174,16 @@ export default function BookingPage() {
     }
 
     const pricingInput: PricingInput = {
-      ratePerDay: selectedCar.dailyRate, // Changed from price to dailyRate
+      ratePerDay: selectedCar.dailyRate,
       pickupDate: formData.pickupDate,
       pickupTime: formData.pickupTime,
       dropoffDate: formData.dropoffDate,
       dropoffTime: formData.dropoffTime,
       childSeat: formData.childSeat,
       additionalDriver: formData.additionalDriver,
-      childSeatPerDay: 5,
-      additionalDriverPerDay: 10,
-      vatRate: 0.15,
     }
 
     const pricing = computePrice(pricingInput)
-
-    console.log("[v0] Pricing calculation:", pricing)
 
     setRentalDays(pricing.rentalDays)
     setLateFee(pricing.lateFee) // Set lateFee state
@@ -378,8 +372,8 @@ export default function BookingPage() {
         flightNumber: formData.flightNumber,
         pickupDate: formData.pickupDate,
         pickupTime: formData.pickupTime,
-        returnDate: formData.dropoffDate,
-        returnTime: formData.dropoffTime,
+        dropoffDate: formData.dropoffDate,
+        dropoffTime: formData.dropoffTime,
         pickupLocation:
           formData.pickupLocation === "Custom Location" ? formData.customPickupLocation : formData.pickupLocation,
         dropoffLocation:

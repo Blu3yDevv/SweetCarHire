@@ -1,6 +1,6 @@
 "use server"
 
-import { computePrice, type BookingInput as PricingInput } from "@/lib/pricing"
+import { computePrice, isValidDate, isValidTime, isValidPrice } from "@/lib/pricing"
 
 export interface BookingSubmission {
   // Customer details
@@ -10,11 +10,11 @@ export interface BookingSubmission {
   country: string
   flightNumber?: string
 
-  // Rental details
+  // Rental details — canonical names used throughout the app
   pickupDate: string
   pickupTime: string
-  dropoffDate: string
-  dropoffTime: string
+  dropoffDate: string  // canonical (not returnDate)
+  dropoffTime: string  // canonical (not returnTime)
   pickupLocation: string
   dropoffLocation: string
   customPickupLocation?: string
@@ -34,30 +34,53 @@ export interface BookingResult {
   pricing?: {
     rentalDays: number
     subtotal: number
-    vat: number
+    lateFee: number
     total: number
   }
 }
 
 /**
- * Server action to validate and submit booking
- * Re-validates pricing on server to prevent tampering
+ * Server action to validate and submit a booking.
+ * Re-calculates pricing on the server to prevent client-side tampering.
+ * No VAT is applied — Sweet Car Hire prices are inclusive.
  */
 export async function submitBooking(data: BookingSubmission): Promise<BookingResult> {
   try {
-    if (!data.driverName || !data.driverEmail || !data.whatsappNumber) {
+    // --- Contact validation ---
+    if (!data.driverName?.trim() || !data.driverEmail?.trim() || !data.whatsappNumber?.trim()) {
       return { success: false, error: "Missing required contact information" }
     }
 
-    if (!data.pickupDate || !data.pickupTime || !data.dropoffDate || !data.dropoffTime) {
-      return { success: false, error: "Missing required rental dates/times" }
+    // --- Date/time validation ---
+    if (!isValidDate(data.pickupDate)) {
+      return { success: false, error: "Invalid pickup date format (expected YYYY-MM-DD)" }
+    }
+    if (!isValidTime(data.pickupTime)) {
+      return { success: false, error: "Invalid pickup time format (expected HH:MM)" }
+    }
+    if (!isValidDate(data.dropoffDate)) {
+      return { success: false, error: "Invalid drop-off date format (expected YYYY-MM-DD)" }
+    }
+    if (!isValidTime(data.dropoffTime)) {
+      return { success: false, error: "Invalid drop-off time format (expected HH:MM)" }
     }
 
-    if (!data.carType || !data.carPricePerDay) {
+    const pickupDT = new Date(`${data.pickupDate}T${data.pickupTime}`)
+    const dropoffDT = new Date(`${data.dropoffDate}T${data.dropoffTime}`)
+    if (dropoffDT <= pickupDT) {
+      return { success: false, error: "Drop-off must be after pickup" }
+    }
+
+    // --- Car/price validation ---
+    if (!data.carType?.trim()) {
       return { success: false, error: "Missing car selection" }
     }
+    if (!isValidPrice(data.carPricePerDay)) {
+      return { success: false, error: "Invalid car price per day" }
+    }
 
-    const pricingInput: PricingInput = {
+    // --- Server-side price calculation (source of truth) ---
+    const pricing = computePrice({
       ratePerDay: data.carPricePerDay,
       pickupDate: data.pickupDate,
       pickupTime: data.pickupTime,
@@ -65,17 +88,13 @@ export async function submitBooking(data: BookingSubmission): Promise<BookingRes
       dropoffTime: data.dropoffTime,
       childSeat: data.childSeat,
       additionalDriver: data.additionalDriver,
-      childSeatPerDay: 5,
-      additionalDriverPerDay: 10,
-      vatRate: 0.15,
-    }
+    })
 
-    const pricing = computePrice(pricingInput)
-
-    // Generate booking reference
+    // --- Generate reference ---
     const reference = `SCH-${Date.now().toString().slice(-6)}`
 
-    const pickupLocation = data.pickupLocation === "Custom Location" ? data.customPickupLocation : data.pickupLocation
+    const pickupLocation =
+      data.pickupLocation === "Custom Location" ? data.customPickupLocation : data.pickupLocation
     const dropoffLocation =
       data.dropoffLocation === "Custom Location" ? data.customDropoffLocation : data.dropoffLocation
 
@@ -94,7 +113,7 @@ Booking Date: ${new Date().toLocaleString("en-GB", {
     })}
 
 ───────────────────────────────────────────────
-📞 CUSTOMER CONTACT INFORMATION (IMPORTANT!)
+CUSTOMER CONTACT INFORMATION
 ───────────────────────────────────────────────
 Name: ${data.driverName}
 Email: ${data.driverEmail}
@@ -103,33 +122,33 @@ Country: ${data.country}
 Flight Number: ${data.flightNumber || "Not provided"}
 
 ───────────────────────────────────────────────
-🚗 RENTAL DETAILS
+RENTAL DETAILS
 ───────────────────────────────────────────────
 Vehicle: ${data.carType}
-Pickup: ${data.pickupDate} at ${data.pickupTime}
+Pickup:   ${data.pickupDate} at ${data.pickupTime}
 Drop-off: ${data.dropoffDate} at ${data.dropoffTime}
-Duration: ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""}
+Duration: ${pricing.rentalDays} day${pricing.rentalDays !== 1 ? "s" : ""}
 
-Pickup Location: ${pickupLocation}
+Pickup Location:   ${pickupLocation}
 Drop-off Location: ${dropoffLocation}
 
 ───────────────────────────────────────────────
-💰 PRICING BREAKDOWN
+PRICING BREAKDOWN
 ───────────────────────────────────────────────
-Car Rental: €${data.carPricePerDay}/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${data.carPricePerDay * pricing.rentalDays}
-${data.childSeat ? `Child Seat: €5/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${5 * pricing.rentalDays}` : ""}
-${data.additionalDriver ? `Additional Driver: €10/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${10 * pricing.rentalDays}` : ""}
+Car Rental: €${data.carPricePerDay}/day × ${pricing.rentalDays} day${pricing.rentalDays !== 1 ? "s" : ""} = €${(data.carPricePerDay * pricing.rentalDays).toFixed(2)}
+${data.childSeat ? `Child Seat (one-time): €5.00` : ""}
+${data.additionalDriver ? `Additional Driver (one-time): €10.00` : ""}
+${pricing.lateFee > 0 ? `Late Return Fee: €${pricing.lateFee.toFixed(2)}` : ""}
 
-Subtotal: €${pricing.subtotal}
-VAT (15%): €${pricing.vat}
+Subtotal: €${pricing.subtotal.toFixed(2)}
 ───────────────────────────────────────────────
-TOTAL AMOUNT: €${pricing.total}
+TOTAL AMOUNT: €${pricing.total.toFixed(2)}
 ───────────────────────────────────────────────
 
-⚠️ ACTION REQUIRED:
+ACTION REQUIRED:
 Please contact the customer within 24 hours to confirm booking and arrange payment.
 
-Customer Email: ${data.driverEmail}
+Customer Email:    ${data.driverEmail}
 Customer WhatsApp: ${data.whatsappNumber}
     `
 
@@ -137,16 +156,14 @@ Customer WhatsApp: ${data.whatsappNumber}
     formData.append("access_key", "ff2074c5-af87-401e-ae78-3398f2644261")
     formData.append("subject", `New Car Rental Booking - ${reference}`)
     formData.append("from_name", "Sweet Car Hire Booking System")
-    formData.append("replyto", data.driverEmail) // RFC 5322 Reply-To header
+    formData.append("replyto", data.driverEmail)
     formData.append("message", adminEmailBody)
-
-    // Add structured data for admin
     formData.append("customer_name", data.driverName)
     formData.append("customer_email", data.driverEmail)
     formData.append("customer_whatsapp", data.whatsappNumber)
     formData.append("customer_country", data.country)
     formData.append("booking_reference", reference)
-    formData.append("total_amount", `€${pricing.total}`)
+    formData.append("total_amount", `€${pricing.total.toFixed(2)}`)
     formData.append("rental_days", pricing.rentalDays.toString())
 
     const response = await fetch("https://api.web3forms.com/submit", {
@@ -160,20 +177,18 @@ Customer WhatsApp: ${data.whatsappNumber}
       throw new Error(result.message || "Failed to send booking notification")
     }
 
-    // This would require adding Supabase integration and creating a bookings table
-
     return {
       success: true,
       reference,
       pricing: {
         rentalDays: pricing.rentalDays,
         subtotal: pricing.subtotal,
-        vat: pricing.vat,
+        lateFee: pricing.lateFee,
         total: pricing.total,
       },
     }
   } catch (error) {
-    console.error("[v0] Booking submission error:", error)
+    console.error("[booking] Submission error:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to submit booking",
