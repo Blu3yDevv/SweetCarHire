@@ -138,12 +138,15 @@ PRICING BREAKDOWN
 Car Rental: €${data.carPricePerDay}/day × ${pricing.rentalDays} day${pricing.rentalDays !== 1 ? "s" : ""} = €${(data.carPricePerDay * pricing.rentalDays).toFixed(2)}
 ${data.childSeat ? `Child Seat (one-time): €5.00` : ""}
 ${data.additionalDriver ? `Additional Driver (one-time): €10.00` : ""}
-${pricing.lateFee > 0 ? `Late Return Fee: €${pricing.lateFee.toFixed(2)}` : ""}
 
 Subtotal: €${pricing.subtotal.toFixed(2)}
 ───────────────────────────────────────────────
 TOTAL AMOUNT: €${pricing.total.toFixed(2)}
 ───────────────────────────────────────────────
+${pricing.lateFee > 0 ? `
+⚠ LATE DROP-OFF FEE NOTICE:
+If the customer returns the car after the scheduled pickup time on the final day, an additional fee of €${pricing.lateFee.toFixed(2)} will be charged.
+───────────────────────────────────────────────` : ""}
 
 ACTION REQUIRED:
 Please contact the customer within 24 hours to confirm booking and arrange payment.

@@ -535,6 +535,23 @@ export default function BookingPage() {
         <span>Car Rental (€${basePricePerDay}/day × ${rentalDays} day${rentalDays > 1 ? "s" : ""})</span>
         <span>€${basePrice}</span>
       </div>
+      ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (one-time fee)</span><span>€${childSeatTotal}</span></div>` : ""}
+      ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (one-time fee)</span><span>€${additionalDriverTotal}</span></div>` : ""}
+      <div class="pricing-row total">
+        <span>TOTAL AMOUNT</span>
+        <span>€${totalPrice}</span>
+      </div>
+    </div>
+
+  ${lateFee > 0 ? `<div class="important" style="background-color: #fef3c7; border-left: 4px solid #d97706;">
+    <strong>⚠ Late Drop-off Fee Notice</strong>
+    <p style="margin:10px 0 0 0;">If you return the car after the scheduled pickup time on the final day, an additional fee of €${lateFee.toFixed(2)} will be charged.</p>
+  </div>` : ""}
+
+  <div class="important">
+    <strong>✅ Your booking has been confirmed!</strong>
+    <p style="margin:10px 0 0 0;">Our team will contact you within 24 hours to arrange payment and finalize details. If you have any questions, please contact us via WhatsApp: +248 2821182</p>
+  </div>
       ${lateFee > 0 ? `<div class="pricing-row"><span>Late Return Fee</span><span>€${lateFee}</span></div>` : ""}
       ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (one-time fee)</span><span>€${childSeatTotal}</span></div>` : ""}
       ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (one-time fee)</span><span>€${additionalDriverTotal}</span></div>` : ""}
@@ -1150,23 +1167,15 @@ export default function BookingPage() {
                   )}
                 </div>
               )}
-              {lateFee > 0 && (
-                <div className="mb-4 pb-4 border-b">
-                  <div className="flex justify-between text-sm md:text-base text-amber-600">
-                    <span>Late Return Fee</span>
-                    <span>{formatPrice(lateFee)}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Dropoff time is after pickup time on final day</p>
-                </div>
-              )}
               <div className="flex justify-between text-lg md:text-xl font-bold text-magenta pt-4 border-t">
                 <span>Total:</span>
                 <span>{formatPrice(totalPrice)}</span> {/* Use formatPrice */}
               </div>
               {lateFee > 0 && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs text-amber-800">
-                    * Late return fee of {formatPrice(lateFee)} included because dropoff time is after pickup time.
+                  <p className="text-xs text-amber-800 font-semibold mb-1">⚠ Late Drop-off Fee Notice</p>
+                  <p className="text-xs text-amber-700">
+                    If you return the car after the scheduled pickup time on the final day, an additional fee of {formatPrice(lateFee)} will be charged.
                   </p>
                 </div>
               )}
