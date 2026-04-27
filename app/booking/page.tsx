@@ -485,92 +485,368 @@ export default function BookingPage() {
     const computedTotal = pricing ? pricing.total : totalPrice
     const computedLateFee = pricing ? pricing.lateFee : lateFee
 
+    const issuedDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
+
     const voucherHTML = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sweet Car Hire - Booking Voucher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sweet Car Hire – Booking Voucher ${bookingReference}</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
-    .header { text-align: center; border-bottom: 3px solid #e91e63; padding-bottom: 20px; margin-bottom: 30px; }
-    .logo { font-size: 28px; font-weight: bold; color: #e91e63; margin-bottom: 10px; }
-    .voucher-title { font-size: 24px; color: #1a365d; margin-bottom: 5px; }
-    .reference { font-size: 18px; color: #e91e63; font-weight: bold; }
-    .section { margin-bottom: 25px; }
-    .section-title { font-size: 18px; font-weight: bold; color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .info-item { margin-bottom: 8px; }
-    .label { font-weight: bold; color: #555; }
-    .value { color: #333; }
-    .pricing { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-    .pricing-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .total { font-size: 20px; font-weight: bold; color: #e91e63; border-top: 2px solid #e91e63; padding-top: 10px; margin-top: 10px; }
-    .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; }
-    .important { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; margin-top: 20px; }
-    @media print { body { margin: 0; } }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 780px;
+      margin: 32px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #0d2b5f;
+      padding: 36px 40px 28px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .header-brand { color: #ffffff; }
+    .brand-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .brand-tagline {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .header-ref { text-align: right; color: #ffffff; }
+    .ref-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 4px;
+    }
+    .ref-code {
+      font-size: 20px;
+      font-weight: 700;
+      color: #e72c82;
+      letter-spacing: 0.05em;
+    }
+    .ref-date {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: #e72c82;
+      padding: 10px 40px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ── Body ── */
+    .body { padding: 36px 40px; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 32px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #e72c82;
+    }
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: #e8e2da;
+    }
+
+    /* ── Info table ── */
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table td {
+      padding: 7px 0;
+      vertical-align: top;
+    }
+    .info-table .col-label {
+      width: 40%;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b6b6b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-right: 16px;
+    }
+    .info-table .col-value {
+      font-size: 14px;
+      color: #1a1a2e;
+      font-weight: 500;
+    }
+    .info-table tr + tr td { border-top: 1px solid #f0ebe4; }
+
+    /* two-column layout */
+    .two-col { display: table; width: 100%; }
+    .col-left, .col-right { display: table-cell; width: 50%; vertical-align: top; }
+    .col-left { padding-right: 24px; }
+
+    /* ── Pricing table ── */
+    .pricing-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .pricing-table thead tr {
+      background: #0d2b5f;
+      color: #ffffff;
+    }
+    .pricing-table thead th {
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: left;
+    }
+    .pricing-table thead th:last-child { text-align: right; }
+    .pricing-table tbody tr { background: #ffffff; }
+    .pricing-table tbody tr:nth-child(even) { background: #fdf8f3; }
+    .pricing-table tbody td {
+      padding: 11px 16px;
+      font-size: 13px;
+      color: #1a1a2e;
+      border-bottom: 1px solid #f0ebe4;
+    }
+    .pricing-table tbody td:last-child { text-align: right; font-weight: 500; }
+    .pricing-table tfoot tr { background: #0d2b5f; }
+    .pricing-table tfoot td {
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .pricing-table tfoot td:last-child { text-align: right; color: #e72c82; font-size: 17px; }
+
+    /* ── Late fee notice ── */
+    .notice {
+      margin-top: 16px;
+      border-left: 3px solid #d97706;
+      background: #fffbeb;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+    }
+    .notice-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #92400e;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .notice-body { font-size: 13px; color: #78350f; }
+
+    /* ── Confirmation banner ── */
+    .confirm-banner {
+      margin-top: 28px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .confirm-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #15803d;
+      margin-bottom: 4px;
+    }
+    .confirm-body { font-size: 13px; color: #166534; }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid #e8e2da;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-left { font-size: 12px; color: #6b6b6b; }
+    .footer-left strong { color: #0d2b5f; }
+    .footer-right {
+      font-size: 11px;
+      color: #aaa;
+      text-align: right;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; margin: 0; border-radius: 0; }
+    }
   </style>
 </head>
 <body>
+<div class="page">
+
+  <!-- Header -->
   <div class="header">
-    <div class="logo">🚗 SWEET CAR HIRE</div>
-    <div class="voucher-title">BOOKING CONFIRMATION</div>
-    <div class="reference">Reference: ${bookingReference}</div>
-    <div style="color:#666;margin-top:10px">Issued: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}</div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Customer Details</div>
-    <div class="info-grid">
-      <div class="info-item"><span class="label">Name:</span> <span class="value">${formData.driverName}</span></div>
-      <div class="info-item"><span class="label">Email:</span> <span class="value">${formData.driverEmail}</span></div>
-      <div class="info-item"><span class="label">WhatsApp:</span> <span class="value">${formData.whatsappNumber}</span></div>
-      <div class="info-item"><span class="label">Country:</span> <span class="value">${formData.country}</span></div>
-      ${formData.flightNumber ? `<div class="info-item"><span class="label">Flight:</span> <span class="value">${formData.flightNumber}</span></div>` : ""}
+    <div class="header-brand">
+      <div class="brand-name">SWEET CAR HIRE</div>
+      <div class="brand-tagline">Premium Car Rental &bull; Seychelles</div>
+    </div>
+    <div class="header-ref">
+      <div class="ref-label">Booking Reference</div>
+      <div class="ref-code">${bookingReference}</div>
+      <div class="ref-date">Issued ${issuedDate}</div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Rental Details</div>
-    <div class="info-grid">
-      <div class="info-item"><span class="label">Vehicle:</span> <span class="value">${formData.carType}</span></div>
-      <div class="info-item"><span class="label">Duration:</span> <span class="value">${computedDays} day${computedDays > 1 ? "s" : ""}</span></div>
-      <div class="info-item"><span class="label">Pickup:</span> <span class="value">${formData.pickupDate} at ${formData.pickupTime}</span></div>
-      <div class="info-item"><span class="label">Drop-off:</span> <span class="value">${formData.dropoffDate} at ${formData.dropoffTime}</span></div>
-      <div class="info-item"><span class="label">Pickup Location:</span> <span class="value">${pickupLocation}</span></div>
-      <div class="info-item"><span class="label">Drop-off Location:</span> <span class="value">${dropoffLocation}</span></div>
-    </div>
-  </div>
+  <!-- Status -->
+  <div class="status-bar">Booking Confirmation Voucher</div>
 
-  <div class="section">
-    <div class="section-title">Pricing Breakdown</div>
-    <div class="pricing">
-      <div class="pricing-row">
-        <span>Car Rental (€${basePricePerDay}/day × ${computedDays} day${computedDays > 1 ? "s" : ""})</span>
-        <span>€${basePrice.toFixed(2)}</span>
+  <div class="body">
+
+    <!-- Customer & Rental side by side -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">Customer Details</span>
+        <span class="section-rule"></span>
       </div>
-      ${formData.childSeat ? `<div class="pricing-row"><span>Child Seat (selected extra)</span><span>€${childSeatTotal.toFixed(2)}</span></div>` : ""}
-      ${formData.additionalDriver ? `<div class="pricing-row"><span>Additional Driver (selected extra)</span><span>€${additionalDriverTotal.toFixed(2)}</span></div>` : ""}
-      <div class="pricing-row total">
-        <span>TOTAL AMOUNT</span>
-        <span>€${computedTotal.toFixed(2)}</span>
+      <div class="two-col">
+        <div class="col-left">
+          <table class="info-table">
+            <tr>
+              <td class="col-label">Full Name</td>
+              <td class="col-value">${formData.driverName}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Email</td>
+              <td class="col-value">${formData.driverEmail}</td>
+            </tr>
+            <tr>
+              <td class="col-label">WhatsApp</td>
+              <td class="col-value">${formData.whatsappNumber}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Country</td>
+              <td class="col-value">${formData.country}</td>
+            </tr>
+            ${formData.flightNumber ? `<tr><td class="col-label">Flight No.</td><td class="col-value">${formData.flightNumber}</td></tr>` : ""}
+          </table>
+        </div>
+        <div class="col-right">
+          <table class="info-table">
+            <tr>
+              <td class="col-label">Vehicle</td>
+              <td class="col-value">${formData.carType}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Duration</td>
+              <td class="col-value">${computedDays} day${computedDays > 1 ? "s" : ""}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Pick-up</td>
+              <td class="col-value">${formData.pickupDate} &bull; ${formData.pickupTime}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Drop-off</td>
+              <td class="col-value">${formData.dropoffDate} &bull; ${formData.dropoffTime}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Pick-up Location</td>
+              <td class="col-value">${pickupLocation}</td>
+            </tr>
+            <tr>
+              <td class="col-label">Drop-off Location</td>
+              <td class="col-value">${dropoffLocation}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
 
-  ${computedLateFee > 0 ? `<div class="important" style="background-color: #fef3c7; border-left: 4px solid #d97706;">
-    <strong>Late Drop-off Fee Notice</strong>
-    <p style="margin:10px 0 0 0;">If you return the car after your agreed pickup time (${formData.pickupTime}) on the final day, an additional fee of €${computedLateFee.toFixed(2)} may be charged.</p>
-  </div>` : ""}
+    <!-- Pricing -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-label">Pricing Breakdown</span>
+        <span class="section-rule"></span>
+      </div>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Car Rental &mdash; ${formData.carType} &nbsp;(${computedDays} day${computedDays > 1 ? "s" : ""} &times; &euro;${basePricePerDay.toFixed(2)}/day)</td>
+            <td>&euro;${basePrice.toFixed(2)}</td>
+          </tr>
+          ${formData.childSeat ? `<tr><td>Child Seat (selected extra)</td><td>&euro;${childSeatTotal.toFixed(2)}</td></tr>` : ""}
+          ${formData.additionalDriver ? `<tr><td>Additional Driver (selected extra)</td><td>&euro;${additionalDriverTotal.toFixed(2)}</td></tr>` : ""}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Total Amount</td>
+            <td>&euro;${computedTotal.toFixed(2)}</td>
+          </tr>
+        </tfoot>
+      </table>
 
-  <div class="important">
-    <strong>✅ Your booking has been confirmed!</strong>
-    <p style="margin:10px 0 0 0;">Our team will contact you within 24 hours to arrange payment and finalize details. If you have any questions, please contact us via WhatsApp: +248 2821182</p>
-  </div>
+      ${computedLateFee > 0 ? `
+      <div class="notice">
+        <div class="notice-title">Late Drop-off Fee Notice</div>
+        <div class="notice-body">If the vehicle is returned after the agreed pick-up time (${formData.pickupTime}) on the final day, an additional charge of &euro;${computedLateFee.toFixed(2)} may apply.</div>
+      </div>` : ""}
+    </div>
 
+    <!-- Confirmation -->
+    <div class="confirm-banner">
+      <div class="confirm-title">Booking Confirmed</div>
+      <div class="confirm-body">Our team will contact you within 24 hours to arrange payment and finalise the details. For any queries, reach us on WhatsApp: <strong>+248 2821182</strong></div>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- Footer -->
   <div class="footer">
-    <p><strong>Sweet Car Hire - Seychelles</strong></p>
-    <p>Premium Car Rental Services</p>
-    <p>Please present this voucher and your valid driver's license at pickup.</p>
+    <div class="footer-left">
+      <strong>Sweet Car Hire</strong> &bull; Seychelles<br>
+      Please present this voucher along with a valid driver&rsquo;s licence at pick-up.
+    </div>
+    <div class="footer-right">
+      This is an automatically generated document.<br>
+      Ref: ${bookingReference}
+    </div>
   </div>
+
+</div>
 </body>
 </html>`
 
