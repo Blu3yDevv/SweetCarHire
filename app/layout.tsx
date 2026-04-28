@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 import Script from "next/script"
 import { CurrencyProvider } from "@/lib/currency"
-import { APP_VERSION } from "@/lib/version"
+import { VersionLogger } from "@/components/version-logger"
 import "./globals.css"
 
 const nunito = Nunito({
@@ -37,11 +37,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // Log app version on load
-  if (typeof window !== "undefined") {
-    console.log(`[v0] Sweet Car Hire v${APP_VERSION}`)
-  }
-
   return (
     <html lang="en">
       <body className={`${nunito.variable} ${inter.variable} font-inter antialiased`}>
@@ -93,6 +88,8 @@ export default function RootLayout({
         />
 
         <div id="google_translate_element" style={{ display: "none" }}></div>
+
+        <VersionLogger />
 
         <CurrencyProvider defaultCurrency="EUR" defaultLocale="en-SC">
           <Suspense fallback={null}>{children}</Suspense>
