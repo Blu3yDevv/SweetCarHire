@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 import Script from "next/script"
 import { CurrencyProvider } from "@/lib/currency"
+import { VersionLogger } from "@/components/version-logger"
 import "./globals.css"
 
 const nunito = Nunito({
@@ -87,6 +88,8 @@ export default function RootLayout({
         />
 
         <div id="google_translate_element" style={{ display: "none" }}></div>
+
+        <VersionLogger />
 
         <CurrencyProvider defaultCurrency="EUR" defaultLocale="en-SC">
           <Suspense fallback={null}>{children}</Suspense>

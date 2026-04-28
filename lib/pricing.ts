@@ -3,10 +3,11 @@
  * Single source of truth for pricing calculations
  *
  * Day Calculation Rules:
- * - A rental "day" is a 24-hour period from pickup time
+ * - A rental "day" is any started 24-hour period from pickup time
+ * - Partial days are always rounded UP (ceil) so the customer is charged for the full day
  * - Example: Pickup 8am Tuesday → Dropoff 8am Wednesday = 1 day
- * - Late Return Fee: If dropoff is after pickup time on the final day, add €10 fee
- * - Example: Pickup 8am Tuesday → Dropoff 11am Wednesday = 1 day + €10 late fee
+ * - Example: Pickup 6:30pm Thu → Dropoff 6:45am Sat = 2 days (36.25 hrs → ceil = 2)
+ * - Minimum rental is always 1 day
  */
 
 export interface BookingInput {
@@ -50,7 +51,6 @@ export interface BookingPrice {
 
 const CHILD_SEAT_FEE = 5 // flat
 const ADDL_DRIVER_FEE = 10 // flat
-const LATE_RETURN_FEE = 10 // flat fee for returning late
 
 export function calculatePricing(input: BookingInput): PricingBreakdown {
   const base = input.dailyRate * input.billableDays
@@ -65,16 +65,15 @@ export function calculatePricing(input: BookingInput): PricingBreakdown {
 }
 
 /**
- * Calculate billable rental days with grace period logic
- * - A "day" = 24 hours from pickup time
- * - Returns: { days: number, lateFee: number }
- * - If dropoff time is later than pickup time on the final day, adds late fee
+ * Calculate billable rental days
+ * - Any partial 24-hour period is rounded UP (ceil) — no late fees
+ * - Minimum 1 day rental
  *
  * Examples:
- * - Pickup 8am Tue → Dropoff 8am Wed = 1 day, €0 late fee
- * - Pickup 8am Tue → Dropoff 11am Wed = 1 day, €10 late fee
- * - Pickup 8am Tue → Dropoff 7am Wed = 1 day, €0 late fee (returned early)
- * - Pickup 8am Tue → Dropoff 9am Thu = 2 days, €10 late fee
+ * - Pickup 8am Tue → Dropoff 8am Wed  = exactly 24 hrs → 1 day
+ * - Pickup 8am Tue → Dropoff 11am Wed = 27 hrs → ceil(27/24) = 2 days
+ * - Pickup 6:30pm Thu → Dropoff 6:45am Sat = 36.25 hrs → ceil(36.25/24) = 2 days
+ * - Pickup 8am Tue → Dropoff 9am Thu  = 49 hrs → ceil(49/24) = 3 days
  */
 export function computeRentalDays(pickupDateTime: Date, dropoffDateTime: Date): { days: number; lateFee: number } {
   if (dropoffDateTime <= pickupDateTime) {
@@ -83,25 +82,11 @@ export function computeRentalDays(pickupDateTime: Date, dropoffDateTime: Date): 
 
   const hours = (dropoffDateTime.getTime() - pickupDateTime.getTime()) / (1000 * 60 * 60)
 
-  // Calculate full 24-hour periods (floor, not ceil)
-  const fullDays = Math.floor(hours / 24)
+  // Any partial day counts as a full day — round UP
+  const rentalDays = Math.max(1, Math.ceil(hours / 24))
 
-  // Calculate remaining hours after full days
-  const remainingHours = hours % 24
-
-  // Minimum 1 day rental
-  const rentalDays = Math.max(1, fullDays)
-
-  // If there are remaining hours beyond full days AND we have at least 1 full day, charge late fee
-  // Special case: if rental is less than 24 hours, no late fee (counts as 1 day, no overage)
-  let lateFee = 0
-  if (fullDays >= 1 && remainingHours > 0) {
-    lateFee = LATE_RETURN_FEE
-  }
-
-  console.log(
-    `[v0] Rental calculation: ${hours.toFixed(2)} hours = ${rentalDays} days + €${lateFee} late fee (${remainingHours.toFixed(2)} hours over)`,
-  )
+  // No late fees with ceil-based billing — partial days are already charged as full days
+  const lateFee = 0
 
   return { days: rentalDays, lateFee }
 }
