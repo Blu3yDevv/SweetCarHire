@@ -13,30 +13,14 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Navigation />
-
       <HeroSection />
-
       <StatsBar />
-
-      <div className="section-fade-wrapper">
-        <div id="fleet" className="section-fade section-blur-enhanced">
-          <FleetSection />
-        </div>
-        <div id="services" className="section-fade section-blur-enhanced">
-          <ServicesSection />
-        </div>
-        <div id="locations" className="section-fade section-blur-enhanced">
-          <LocationsSection />
-        </div>
-        <div id="about" className="section-fade section-blur-enhanced">
-          <AboutSection />
-        </div>
-        <div className="section-fade section-blur-enhanced">
-          <ReviewsSection />
-        </div>
-        <Footer />
-      </div>
-
+      <FleetSection />
+      <ServicesSection />
+      <LocationsSection />
+      <AboutSection />
+      <ReviewsSection />
+      <Footer />
       <SocialFloat />
     </div>
   )

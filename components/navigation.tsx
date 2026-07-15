@@ -6,13 +6,6 @@ import { Menu, X, Globe, DollarSign, ChevronDown } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useCurrency } from "@/lib/currency"
 
-declare global {
-  interface Window {
-    google: any
-    googleTranslateElementInit: () => void
-  }
-}
-
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -21,7 +14,6 @@ export function Navigation() {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [currentLanguage, setCurrentLanguage] = useState("EN")
-  const [isTranslateReady, setIsTranslateReady] = useState(false)
   const [textColor, setTextColor] = useState("text-white")
 
   const { currency, setCurrency } = useCurrency()
@@ -38,7 +30,7 @@ export function Navigation() {
     { code: "EN", name: "English", flag: "🇺🇸", googleCode: "en" },
     { code: "FR", name: "Français", flag: "🇫🇷", googleCode: "fr" },
     { code: "AR", name: "العربية", flag: "🇸🇦", googleCode: "ar" },
-    { code: "ZH", name: "中文", flag: "🇨🇳", googleCode: "zh" },
+    { code: "ZH", name: "中文", flag: "🇨🇳", googleCode: "zh-CN" },
     { code: "RU", name: "Русский", flag: "🇷🇺", googleCode: "ru" },
     { code: "ES", name: "Español", flag: "🇪🇸", googleCode: "es" },
   ]
@@ -68,50 +60,29 @@ export function Navigation() {
     setIsMenuOpen(false)
   }
 
+  // Google Translate is driven by its "googtrans" cookie: set it and reload,
+  // and the translate script applies the language on page load.
+  const setGoogtransCookie = (value: string | null) => {
+    const host = window.location.hostname
+    const expiry = value === null ? "; expires=Thu, 01 Jan 1970 00:00:00 GMT" : ""
+    const v = value ?? ""
+    document.cookie = `googtrans=${v}; path=/${expiry}`
+    document.cookie = `googtrans=${v}; path=/; domain=${host}${expiry}`
+    document.cookie = `googtrans=${v}; path=/; domain=.${host}${expiry}`
+  }
+
   const handleLanguageChange = (langCode: string) => {
-    setCurrentLanguage(langCode)
     setIsLanguageOpen(false)
 
     const selectedLang = languages.find((lang) => lang.code === langCode)
-    if (!selectedLang) return
+    if (!selectedLang || langCode === currentLanguage) return
 
-    if (selectedLang.googleCode !== "en") {
-      const translatePage = () => {
-        if (!isTranslateReady) {
-          setTimeout(translatePage, 1000)
-          return
-        }
-
-        try {
-          const selectElement = document.querySelector(".goog-te-combo") as HTMLSelectElement
-
-          if (selectElement) {
-            if (selectElement.value !== "en") {
-              selectElement.value = "en"
-              selectElement.dispatchEvent(new Event("change"))
-
-              setTimeout(() => {
-                selectElement.value = selectedLang.googleCode
-                selectElement.dispatchEvent(new Event("change"))
-              }, 1000)
-            } else {
-              selectElement.value = selectedLang.googleCode
-              selectElement.dispatchEvent(new Event("change"))
-            }
-          }
-        } catch (error) {
-          console.error("[v0] Error changing language:", error)
-        }
-      }
-
-      translatePage()
+    if (selectedLang.googleCode === "en") {
+      setGoogtransCookie(null)
     } else {
-      const selectElement = document.querySelector(".goog-te-combo") as HTMLSelectElement
-      if (selectElement && selectElement.value !== "en") {
-        selectElement.value = "en"
-        selectElement.dispatchEvent(new Event("change"))
-      }
+      setGoogtransCookie(`/en/${selectedLang.googleCode}`)
     }
+    window.location.reload()
   }
 
   const handleCurrencyChange = (currencyCode: string) => {
@@ -153,21 +124,25 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Google Translate
+  // Reflect the active Google Translate language (from its cookie) in the selector
   useEffect(() => {
-    const handleTranslateReady = () => {
-      setIsTranslateReady(true)
-    }
+    const match = document.cookie.match(/(?:^|;\s*)googtrans=\/en\/([^;]+)/)
+    if (!match) return
+    const active = languages.find((lang) => lang.googleCode === decodeURIComponent(match[1]))
+    if (active) setCurrentLanguage(active.code)
+  }, [])
 
-    window.addEventListener("googleTranslateReady", handleTranslateReady)
-
-    if (typeof window !== "undefined" && window.google?.translate?.TranslateElement) {
-      setIsTranslateReady(true)
+  // Close the language/currency dropdowns when clicking anywhere else
+  useEffect(() => {
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest("[data-dropdown]")) {
+        setIsLanguageOpen(false)
+        setIsCurrencyOpen(false)
+      }
     }
-
-    return () => {
-      window.removeEventListener("googleTranslateReady", handleTranslateReady)
-    }
+    document.addEventListener("pointerdown", handlePointerDown)
+    return () => document.removeEventListener("pointerdown", handlePointerDown)
   }, [])
 
   // Header visibility
@@ -224,12 +199,12 @@ export function Navigation() {
             </div>
 
             <div className="hidden lg:flex items-center space-x-3">
-              <div className="relative">
+              <div className="relative" data-dropdown>
                 <button
                   onClick={() => setIsLanguageOpen(!isLanguageOpen)}
                   className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 ${
                     isScrolled ? "bg-navy/5 hover:bg-navy/10 text-navy" : "bg-white/10 hover:bg-white/20 text-white"
-                  } font-medium text-sm`}
+                  } font-medium text-sm notranslate`}
                 >
                   <Globe className="w-4 h-4" />
                   <span>{currentLanguage}</span>
@@ -242,7 +217,7 @@ export function Navigation() {
                       <button
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cream transition-all duration-300 text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cream transition-all duration-300 text-left notranslate"
                       >
                         <span className="text-lg">{lang.flag}</span>
                         <span className="text-navy font-medium">{lang.name}</span>
@@ -252,7 +227,7 @@ export function Navigation() {
                 )}
               </div>
 
-              <div className="relative">
+              <div className="relative" data-dropdown>
                 <button
                   onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
                   className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full transition-all duration-300 ${
@@ -383,13 +358,13 @@ export function Navigation() {
               {/* Language & Currency Row */}
               <div className="flex gap-2 px-2">
                 {/* Language Selector */}
-                <div className="relative flex-1">
+                <div className="relative flex-1" data-dropdown>
                   <button
                     onClick={() => {
                       setIsLanguageOpen(!isLanguageOpen)
                       setIsCurrencyOpen(false)
                     }}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cream text-navy font-medium text-sm"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cream text-navy font-medium text-sm notranslate"
                   >
                     <Globe className="w-4 h-4" />
                     <span>{currentLanguage}</span>
@@ -402,7 +377,7 @@ export function Navigation() {
                         <button
                           key={lang.code}
                           onClick={() => handleLanguageChange(lang.code)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cream transition-colors text-left text-sm"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-cream transition-colors text-left text-sm notranslate"
                         >
                           <span>{lang.flag}</span>
                           <span className="text-navy">{lang.name}</span>
@@ -413,7 +388,7 @@ export function Navigation() {
                 </div>
 
                 {/* Currency Selector */}
-                <div className="relative flex-1">
+                <div className="relative flex-1" data-dropdown>
                   <button
                     onClick={() => {
                       setIsCurrencyOpen(!isCurrencyOpen)

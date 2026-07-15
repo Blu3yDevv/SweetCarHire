@@ -1,132 +1,83 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Plane, MapPin, Shield, Clock, Phone, CreditCard } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
+const SERVICES = [
+  {
+    title: "Airport delivery",
+    description: "We meet you at SEZ Airport with the car ready to go, so you skip the counters and the waiting around.",
+  },
+  {
+    title: "Unlimited mileage",
+    description: "There is no distance limit on any rental. Drive as much of the island as you like.",
+  },
+  {
+    title: "Full insurance",
+    description: "Comprehensive cover is included as standard with every booking.",
+  },
+  {
+    title: "24/7 support",
+    description: "You can reach a real local person on the phone at any hour of your rental.",
+  },
+  {
+    title: "WhatsApp booking",
+    description: "Book and get your questions answered over WhatsApp, usually within minutes.",
+  },
+  {
+    title: "No hidden fees",
+    description: "The price you see when you book is the price you pay. Nothing gets added later.",
+  },
+]
+
 export function ServicesSection() {
-  const [showAllPerks, setShowAllPerks] = useState(false)
-  const [visibleCards, setVisibleCards] = useState<number[]>([])
+  const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
-
-  const services = [
-    {
-      icon: Plane,
-      title: "Airport Delivery",
-      description: "We'll meet you at SEZ Airport with your rental car ready to go. No waiting, no hassle.",
-      gradient: "from-magenta/10 to-pink/10",
-      iconColor: "text-magenta",
-    },
-    {
-      icon: MapPin,
-      title: "Unlimited Mileage",
-      description: "Explore every corner of Mahé and beyond without worrying about distance limits.",
-      gradient: "from-navy/10 to-blue-500/10",
-      iconColor: "text-navy",
-    },
-    {
-      icon: Shield,
-      title: "Full Insurance",
-      description: "Drive with peace of mind knowing you're fully covered with comprehensive insurance.",
-      gradient: "from-green-500/10 to-emerald-500/10",
-      iconColor: "text-green-600",
-    },
-    {
-      icon: Clock,
-      title: "24/7 Support",
-      description: "Our team is available around the clock to assist you during your rental period.",
-      gradient: "from-sunshine/10 to-amber-500/10",
-      iconColor: "text-amber-600",
-    },
-    {
-      icon: Phone,
-      title: "WhatsApp Booking",
-      description: "Quick and easy booking through WhatsApp. Get instant responses to your queries.",
-      gradient: "from-magenta/10 to-pink/10",
-      iconColor: "text-magenta",
-    },
-    {
-      icon: CreditCard,
-      title: "No Hidden Fees",
-      description: "Transparent pricing with no surprise charges. What you see is what you pay.",
-      gradient: "from-navy/10 to-blue-500/10",
-      iconColor: "text-navy",
-    },
-  ]
-
-  const displayedServices = showAllPerks ? services : services.slice(0, 3)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const cardIndex = Number.parseInt(entry.target.getAttribute("data-service-index") || "0")
-            setVisibleCards((prev) => [...new Set([...prev, cardIndex])])
-          }
-        })
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true)
       },
-      { threshold: 0.15 },
+      { threshold: 0.1 },
     )
-
-    const cards = sectionRef.current?.querySelectorAll("[data-service-index]")
-    cards?.forEach((card) => observer.observe(card))
-
+    if (sectionRef.current) observer.observe(sectionRef.current)
     return () => observer.disconnect()
-  }, [showAllPerks])
+  }, [])
 
   return (
-    <section ref={sectionRef} id="services" className="py-20 md:py-32 bg-white relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-navy/5 to-transparent" />
+    <section ref={sectionRef} id="services" className="py-20 md:py-28 bg-navy relative overflow-hidden">
+      {/* Soft glows */}
+      <div className="absolute -top-40 right-[-10%] w-[500px] h-[500px] bg-magenta/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute -bottom-40 left-[-10%] w-[500px] h-[500px] bg-pink/10 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16 md:mb-24 max-w-4xl mx-auto">
-          <h2 className="font-poppins font-black text-4xl md:text-5xl lg:text-6xl text-navy mb-6 tracking-tight">
-            Why Choose Us?
+      <div className="container mx-auto px-5 md:px-8 relative z-10">
+        <div className="max-w-2xl mb-14 md:mb-20">
+          <p className="eyebrow text-pink mb-4">Why choose us</p>
+          <h2 className="display-heading text-white text-5xl md:text-6xl lg:text-7xl text-balance">
+            The sweet way to rent.
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            We make car rental in Seychelles simple, transparent, and stress-free
+          <p className="mt-5 text-lg text-white/70 leading-relaxed">
+            Renting a car should be the easy part of your holiday. Here is how we keep it that way.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-          {displayedServices.map((service, index) => {
-            const IconComponent = service.icon
-            return (
-              <div
-                key={service.title}
-                data-service-index={index}
-                className={`transition-all duration-700 ease-out ${
-                  visibleCards.includes(index) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-                }`}
-                style={{ transitionDelay: `${index * 100}ms` }}
-              >
-                <Card className="h-full border-0 shadow-[0_2px_20px_-6px_rgba(13,43,95,0.08)] hover:shadow-[0_8px_40px_-12px_rgba(13,43,95,0.12)] transition-all duration-500 bg-white rounded-3xl group hover:-translate-y-1">
-                  <CardContent className="p-8 md:p-10">
-                    <div
-                      className={`inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${service.gradient} mb-6 transition-transform duration-300 group-hover:scale-105`}
-                    >
-                      <IconComponent className={`h-7 w-7 md:h-8 md:w-8 ${service.iconColor}`} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="font-poppins font-bold text-xl md:text-2xl text-navy mb-3">{service.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{service.description}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            )
-          })}
-        </div>
-
-        {!showAllPerks && (
-          <div className="text-center mt-10 md:hidden">
-            <button
-              onClick={() => setShowAllPerks(true)}
-              className="bg-navy hover:bg-navy/90 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-lg"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+          {SERVICES.map((service, index) => (
+            <div
+              key={service.title}
+              className={`group border-t-2 border-white/15 pt-6 transition-all duration-700 ease-out hover:border-pink ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
-              View More Perks
-            </button>
-          </div>
-        )}
+              <div className="display-heading text-outline-white text-6xl md:text-7xl select-none transition-colors duration-300 group-hover:text-pink">
+                {String(index + 1).padStart(2, "0")}
+              </div>
+              <h3 className="font-display font-bold text-xl md:text-2xl text-white mt-4">{service.title}</h3>
+              <p className="text-white/65 leading-relaxed mt-2">{service.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

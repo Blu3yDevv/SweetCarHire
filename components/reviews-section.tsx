@@ -1,27 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react"
+import { Star, ChevronLeft, ChevronRight } from "lucide-react"
 
 // ============================================
 // REVIEWS CONFIGURATION - Edit reviews here
 // ============================================
 const REVIEWS_DATA = [
   {
-    name: "Steve Lanham.",
-    location: "Unkown",
+    name: "Steve Lanham",
+    location: "Verified guest",
     rating: 4,
     text: "We are using Sweet Car Hire at the moment. They have been perfect. Arranged a car for us on Praslin also. Pick you up and let you drop the car off wherever... always on time with meet and greet. Great service...",
   },
   {
     name: "Ati Kagazchi",
-    location: "Unkown",
+    location: "Verified guest",
     rating: 5,
     text: "Best car rental agency hands down!!! In all my years of renting cars around the world, never has a rental agency gone so far in customer service and customer satisfaction as Sweet Car Hire.",
   },
   {
-    name: "Ciara Sparkes.",
-    location: "Unkown",
+    name: "Ciara Sparkes",
+    location: "Verified guest",
     rating: 5,
     text: "Your service was fabulous and the cleanliness of your car was impeccable. Would definitely recommend you to everyone.",
   },
@@ -29,7 +29,7 @@ const REVIEWS_DATA = [
     name: "Anonymous",
     location: "Seychelles",
     rating: 5,
-    text: "Rented from Sweet Car Hire last week. Lovely people who give amazing customer service! Rent from them and you won’t be disappointed!!",
+    text: "Rented from Sweet Car Hire last week. Lovely people who give amazing customer service! Rent from them and you won't be disappointed!!",
   },
   {
     name: "Anonymous",
@@ -40,20 +40,51 @@ const REVIEWS_DATA = [
 ]
 // ============================================
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+}
+
+function ReviewCard({ review, compact = false }: { review: (typeof REVIEWS_DATA)[number]; compact?: boolean }) {
+  return (
+    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_10px_50px_-18px_rgba(13,43,95,0.25)] relative h-full">
+      <span className="display-heading text-magenta/20 text-7xl absolute top-2 left-5 select-none" aria-hidden="true">
+        "
+      </span>
+
+      <div className="relative">
+        <div className="flex gap-0.5 mb-4 pt-3">
+          {[...Array(review.rating)].map((_, i) => (
+            <Star key={i} className="w-4 h-4 fill-magenta text-magenta" />
+          ))}
+        </div>
+
+        <p className={`text-navy/80 leading-relaxed mb-6 ${compact ? "text-sm" : "text-base"}`}>{review.text}</p>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-navy to-magenta flex items-center justify-center text-white font-bold text-sm">
+            {getInitials(review.name)}
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-navy text-sm">{review.name}</h4>
+            <p className="text-xs text-muted-foreground">{review.location}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ReviewsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
-
   const reviews = REVIEWS_DATA
 
-  const nextReview = () => {
-    setActiveIndex((prev) => (prev + 1) % reviews.length)
-  }
+  const nextReview = () => setActiveIndex((prev) => (prev + 1) % reviews.length)
+  const prevReview = () => setActiveIndex((prev) => (prev - 1 + reviews.length) % reviews.length)
 
-  const prevReview = () => {
-    setActiveIndex((prev) => (prev - 1 + reviews.length) % reviews.length)
-  }
-
-  // Get visible reviews (current + 1 on each side for desktop)
   const getVisibleReviews = () => {
     const result = []
     for (let i = -1; i <= 1; i++) {
@@ -63,147 +94,66 @@ export function ReviewsSection() {
     return result
   }
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-  }
-
   return (
-    <section className="py-16 md:py-28 bg-gradient-to-b from-cream to-white overflow-hidden relative">
-      {/* Subtle decorative elements */}
-      <div className="absolute top-20 left-10 w-64 h-64 bg-magenta/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-ocean/5 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="container mx-auto px-4 relative">
-        {/* Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <span className="inline-block px-4 py-2 bg-magenta/10 text-magenta font-semibold text-sm rounded-full mb-4">
-            Testimonials
-          </span>
-          <h2 className="font-poppins font-black text-3xl md:text-5xl lg:text-6xl text-navy mb-4 tracking-tight">
-            Loved by Travelers
+    <section className="py-20 md:py-28 bg-cream overflow-hidden relative">
+      <div className="container mx-auto px-5 md:px-8 relative">
+        <div className="text-center mb-12 md:mb-16 max-w-2xl mx-auto">
+          <p className="eyebrow text-magenta mb-4">Testimonials</p>
+          <h2 className="display-heading text-navy text-5xl md:text-6xl lg:text-7xl text-balance">
+            Sweet words from travellers.
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
-            Real experiences from explorers who chose Sweet Car Hire
-          </p>
         </div>
 
-        {/* Desktop Carousel */}
+        {/* Desktop carousel */}
         <div className="hidden md:block relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 py-6">
+          <div className="flex items-stretch justify-center gap-6 py-6">
             {getVisibleReviews().map((review, idx) => {
               const isCenter = review.position === 0
-
               return (
                 <div
                   key={`${review.name}-${idx}`}
                   className={`transition-all duration-500 ease-out flex-shrink-0 ${
                     isCenter ? "scale-100 opacity-100 z-20" : "scale-95 opacity-40 z-10"
                   }`}
-                  style={{
-                    width: isCenter ? "420px" : "320px",
-                  }}
+                  style={{ width: isCenter ? "420px" : "320px" }}
                 >
-                  <div
-                    className={`bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-navy/5 relative ${
-                      isCenter ? "shadow-xl" : ""
-                    }`}
-                  >
-                    {/* Quote icon */}
-                    <div className="absolute -top-3 -left-3 w-10 h-10 bg-magenta rounded-xl flex items-center justify-center shadow-md">
-                      <Quote className="w-4 h-4 text-white" fill="white" />
-                    </div>
-
-                    {/* Stars */}
-                    <div className="flex gap-0.5 mb-4">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-sunshine text-sunshine" />
-                      ))}
-                    </div>
-
-                    {/* Review text */}
-                    <p className={`text-navy/80 leading-relaxed mb-6 ${isCenter ? "text-base" : "text-sm"}`}>
-                      "{review.text}"
-                    </p>
-
-                    {/* Author - with anonymous avatar */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ocean to-magenta flex items-center justify-center text-white font-bold text-sm">
-                        {getInitials(review.name)}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-navy text-sm">{review.name}</h4>
-                        <p className="text-xs text-muted-foreground">{review.location}</p>
-                      </div>
-                    </div>
-                  </div>
+                  <ReviewCard review={review} compact={!isCenter} />
                 </div>
               )
             })}
           </div>
 
-          {/* Navigation Arrows */}
           <button
             onClick={prevReview}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg border border-navy/5 flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-all duration-300 z-30"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-all duration-300 z-30"
             aria-label="Previous review"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-
           <button
             onClick={nextReview}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg border border-navy/5 flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-all duration-300 z-30"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-all duration-300 z-30"
             aria-label="Next review"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Mobile */}
         <div className="md:hidden relative">
-          {/* Current Review Card */}
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-navy/5 relative mx-2">
-            {/* Quote icon */}
-            <div className="absolute -top-2 -left-1 w-8 h-8 bg-magenta rounded-lg flex items-center justify-center shadow-md">
-              <Quote className="w-3 h-3 text-white" fill="white" />
-            </div>
-
-            {/* Stars */}
-            <div className="flex gap-0.5 mb-3 pt-1">
-              {[...Array(reviews[activeIndex].rating)].map((_, i) => (
-                <Star key={i} className="w-3.5 h-3.5 fill-sunshine text-sunshine" />
-              ))}
-            </div>
-
-            {/* Review text */}
-            <p className="text-navy/80 leading-relaxed mb-4 text-sm">"{reviews[activeIndex].text}"</p>
-
-            {/* Author */}
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ocean to-magenta flex items-center justify-center text-white font-bold text-xs">
-                {getInitials(reviews[activeIndex].name)}
-              </div>
-              <div>
-                <h4 className="font-semibold text-navy text-sm">{reviews[activeIndex].name}</h4>
-                <p className="text-xs text-muted-foreground">{reviews[activeIndex].location}</p>
-              </div>
-            </div>
+          <div className="mx-2">
+            <ReviewCard review={reviews[activeIndex]} compact />
           </div>
 
-          {/* Mobile Navigation */}
-          <div className="flex items-center justify-center gap-4 mt-5">
+          <div className="flex items-center justify-center gap-4 mt-6">
             <button
               onClick={prevReview}
-              className="w-10 h-10 rounded-full bg-white shadow-md border border-navy/10 flex items-center justify-center text-navy active:scale-95 transition-transform"
+              className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-navy active:scale-95 transition-transform"
               aria-label="Previous review"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            {/* Dots */}
             <div className="flex gap-1.5">
               {reviews.map((_, index) => (
                 <button
@@ -219,7 +169,7 @@ export function ReviewsSection() {
 
             <button
               onClick={nextReview}
-              className="w-10 h-10 rounded-full bg-white shadow-md border border-navy/10 flex items-center justify-center text-navy active:scale-95 transition-transform"
+              className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-navy active:scale-95 transition-transform"
               aria-label="Next review"
             >
               <ChevronRight className="w-5 h-5" />
@@ -227,7 +177,7 @@ export function ReviewsSection() {
           </div>
         </div>
 
-        {/* Dots indicator - Desktop only */}
+        {/* Desktop dots */}
         <div className="hidden md:flex justify-center gap-2 mt-8">
           {reviews.map((_, index) => (
             <button

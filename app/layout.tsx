@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Nunito, Inter } from "next/font/google"
+import { Bricolage_Grotesque, Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 import Script from "next/script"
@@ -8,10 +8,10 @@ import { CurrencyProvider } from "@/lib/currency"
 import { VersionLogger } from "@/components/version-logger"
 import "./globals.css"
 
-const nunito = Nunito({
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
+  variable: "--font-display",
 })
 
 const inter = Inter({
@@ -39,7 +39,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${nunito.variable} ${inter.variable} font-inter antialiased`}>
+      <body className={`${display.variable} ${inter.variable} font-inter antialiased`}>
+        {/* Google Translate rewrites text nodes inside React-managed elements; without
+            these guards React can crash (removeChild/insertBefore on foreign nodes)
+            whenever state updates re-render translated text. */}
+        <Script
+          id="translate-dom-guard"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof Node === 'function' && Node.prototype) {
+                var origRemoveChild = Node.prototype.removeChild;
+                Node.prototype.removeChild = function(child) {
+                  if (child.parentNode !== this) return child;
+                  return origRemoveChild.apply(this, arguments);
+                };
+                var origInsertBefore = Node.prototype.insertBefore;
+                Node.prototype.insertBefore = function(newNode, referenceNode) {
+                  if (referenceNode && referenceNode.parentNode !== this) return newNode;
+                  return origInsertBefore.apply(this, arguments);
+                };
+              }
+            `,
+          }}
+        />
         <Script
           id="google-translate-init"
           strategy="afterInteractive"
@@ -47,38 +70,15 @@ export default function RootLayout({
             __html: `
               window.googleTranslateElementInit = function() {
                 try {
-                  if (typeof google !== 'undefined' && google.translate && google.translate.TranslateElement) {
-                    new google.translate.TranslateElement({
-                      pageLanguage: 'en',
-                      includedLanguages: 'en,fr,ar,zh,ru,es,de,it,pt,ja,ko',
-                      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                      autoDisplay: false,
-                      multilanguagePage: true
-                    }, 'google_translate_element');
-                    
-                    // Force translate class on all text elements
-                    setTimeout(() => {
-                      const elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, td, th, div');
-                      elements.forEach(el => {
-                        if (!el.classList.contains('notranslate') && !el.classList.contains('goog-te-')) {
-                          el.classList.add('translate');
-                        }
-                      });
-                    }, 1000);
-                  } else {
-                    setTimeout(window.googleTranslateElementInit, 1000);
-                  }
+                  new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,fr,ar,zh-CN,ru,es,de,it,pt,ja,ko',
+                    autoDisplay: false
+                  }, 'google_translate_element');
                 } catch (error) {
-                  console.error('[v0] Google Translate error:', error);
-                  setTimeout(window.googleTranslateElementInit, 2000);
+                  console.error('Google Translate init error:', error);
                 }
               };
-              
-              if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => setTimeout(window.googleTranslateElementInit, 500));
-              } else {
-                setTimeout(window.googleTranslateElementInit, 500);
-              }
             `,
           }}
         />
@@ -89,12 +89,11 @@ export default function RootLayout({
 
         <div id="google_translate_element" style={{ display: "none" }}></div>
 
-        <VersionLogger />
-
         <CurrencyProvider defaultCurrency="EUR" defaultLocale="en-SC">
           <Suspense fallback={null}>{children}</Suspense>
         </CurrencyProvider>
 
+        <VersionLogger />
         <Analytics />
       </body>
     </html>

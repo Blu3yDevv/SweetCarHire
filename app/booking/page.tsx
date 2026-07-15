@@ -10,8 +10,30 @@ import { MobileBookingSummary } from "@/components/mobile-booking-summary"
 import { generateVoucherHtml } from "@/lib/voucher-template"
 
 const carTypes = [
-  { id: "suzuki-dzire", name: "Suzuki Dzire", dailyRate: 45, passengers: 4, transmission: "Automatic" },
-  { id: "suzuki-fronx", name: "Suzuki Fronx", dailyRate: 60, passengers: 4, transmission: "Automatic" },
+  {
+    id: "suzuki-dzire",
+    name: "Suzuki Dzire",
+    dailyRate: 45,
+    passengers: 5,
+    transmission: "Automatic",
+    image: "/images/dzire2.png",
+  },
+  {
+    id: "hyundai-grandi10",
+    name: "Hyundai Grand i10",
+    dailyRate: 45,
+    passengers: 5,
+    transmission: "Automatic",
+    image: "/images/grandi10.png",
+  },
+  {
+    id: "suzuki-fronx",
+    name: "Suzuki Fronx",
+    dailyRate: 60,
+    passengers: 5,
+    transmission: "Automatic",
+    image: "/images/fronx2.png",
+  },
 ]
 
 const locations = [
@@ -735,7 +757,7 @@ export default function BookingPage() {
                   <div className="flex flex-col gap-4 md:gap-6">
                     <div className="w-full">
                       <Image
-                        src={`/images/${car.id}.png` || "/placeholder.svg"} // Construct image path
+                        src={car.image}
                         alt={car.name}
                         width={300}
                         height={200}
