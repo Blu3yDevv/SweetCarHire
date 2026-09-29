@@ -9,8 +9,6 @@ export function Footer() {
 
   return (
     <footer className="bg-navy text-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-magenta/10 rounded-full blur-[150px] pointer-events-none" />
-
       <div className="container mx-auto px-5 md:px-8 relative z-10">
         {/* Closing CTA */}
         <div className="py-16 md:py-24 text-center border-b border-white/10">
@@ -75,7 +73,7 @@ export function Footer() {
                 { name: "Services", href: "#services" },
                 { name: "Locations", href: "#locations" },
                 { name: "About Us", href: "#about" },
-                { name: "Policies", href: "/policies" },
+                { name: "Booking information", href: "/policies" },
               ].map((link) => (
                 <li key={link.name}>
                   <a
@@ -99,8 +97,8 @@ export function Footer() {
               </div>
               <div className="flex items-start gap-3.5">
                 <Mail className="h-4 w-4 text-magenta mt-1 shrink-0" />
-                <a href="mailto:sweetcarhire@gmail.com" className="text-white/70 hover:text-white transition-colors">
-                  sweetcarhire@gmail.com
+                <a href="mailto:sweetcarhirebooking@gmail.com" className="text-white/70 hover:text-white transition-colors">
+                  sweetcarhirebooking@gmail.com
                 </a>
               </div>
               <div className="flex items-start gap-3.5">
@@ -111,13 +109,6 @@ export function Footer() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Giant wordmark */}
-        <div className="select-none pointer-events-none overflow-hidden" aria-hidden="true">
-          <p className="display-heading text-outline-white text-[9.5vw] leading-none text-center whitespace-nowrap translate-y-[12%]">
-            SWEET CAR HIRE
-          </p>
         </div>
 
         <div className="border-t border-white/10 py-7">

@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 
 type Rates = Record<string, number>
 type Ctx = {
@@ -12,6 +12,11 @@ type Ctx = {
 }
 
 const CurrencyCtx = createContext<Ctx | null>(null)
+const SUPPORTED_CURRENCIES = ["EUR", "SCR", "GBP", "USD", "JPY"]
+
+function supportedCurrency(value: string) {
+  return SUPPORTED_CURRENCIES.includes(value) ? value : "EUR"
+}
 
 export function CurrencyProvider({
   children,
@@ -22,14 +27,15 @@ export function CurrencyProvider({
   defaultCurrency?: string
   defaultLocale?: string
 }) {
-  const [currency, setCurrencyState] = useState(defaultCurrency)
+  const [currency, setCurrencyState] = useState(() => supportedCurrency(defaultCurrency))
   const [rates, setRates] = useState<Rates>({ EUR: 1, SCR: 14.8, GBP: 0.85, USD: 1.09, JPY: 163 })
 
   useEffect(() => {
-    const saved = localStorage.getItem("selectedCurrency")
-    if (saved) {
-      console.log("[v0] Loaded currency from localStorage:", saved)
-      setCurrencyState(saved)
+    try {
+      const saved = localStorage.getItem("selectedCurrency")
+      if (saved) setCurrencyState(supportedCurrency(saved))
+    } catch {
+      // Storage may be disabled in private or restricted browsers.
     }
   }, [])
 
@@ -44,7 +50,12 @@ export function CurrencyProvider({
         }
         const data = await res.json()
         console.log("[v0] Exchange rates updated:", data.rates)
-        setRates((prev) => ({ ...prev, ...data.rates }))
+        const validRates: Rates = { EUR: 1 }
+        for (const code of SUPPORTED_CURRENCIES) {
+          const rate = data.rates?.[code]
+          if (typeof rate === "number" && Number.isFinite(rate) && rate > 0) validRates[code] = rate
+        }
+        setRates((prev) => ({ ...prev, ...validRates, EUR: 1 }))
       } catch (error) {
         console.error("[v0] Error fetching exchange rates:", error)
       }
@@ -55,24 +66,32 @@ export function CurrencyProvider({
     return () => clearInterval(interval)
   }, [])
 
-  const setCurrency = (c: string) => {
+  const setCurrency = useCallback((c: string) => {
     console.log("[v0] Changing currency to:", c)
-    setCurrencyState(c)
-    localStorage.setItem("selectedCurrency", c)
-    window.dispatchEvent(new CustomEvent("currency-changed", { detail: c }))
-  }
+    const nextCurrency = supportedCurrency(c)
+    setCurrencyState(nextCurrency)
+    try {
+      localStorage.setItem("selectedCurrency", nextCurrency)
+    } catch {
+      // Currency selection still works without persistence.
+    }
+    window.dispatchEvent(new CustomEvent("currency-changed", { detail: nextCurrency }))
+  }, [])
 
-  const convert = (amountEUR: number) => {
+  const convert = useCallback((amountEUR: number) => {
     const rate = rates[currency] ?? 1
     return Math.round(amountEUR * rate * 100) / 100
-  }
+  }, [currency, rates])
 
-  const format = (amountEUR: number) =>
-    new Intl.NumberFormat(defaultLocale, { style: "currency", currency }).format(convert(amountEUR))
+  const format = useCallback(
+    (amountEUR: number) =>
+      new Intl.NumberFormat(defaultLocale, { style: "currency", currency }).format(convert(amountEUR)),
+    [convert, currency, defaultLocale],
+  )
 
   const value = useMemo(
     () => ({ currency, locale: defaultLocale, rates, setCurrency, convert, format }),
-    [currency, defaultLocale, rates],
+    [convert, currency, defaultLocale, format, rates, setCurrency],
   )
   return <CurrencyCtx.Provider value={value}>{children}</CurrencyCtx.Provider>
 }

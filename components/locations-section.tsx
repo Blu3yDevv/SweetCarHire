@@ -5,6 +5,7 @@ import type React from "react"
 import { MapPin, Search, ArrowRight } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 const SEYCHELLES_LOCATIONS = [
   "Anse Boileau",
@@ -28,6 +29,7 @@ const SEYCHELLES_LOCATIONS = [
   "Belombre",
   "Bel Ombre",
   "Cascade",
+  "Cat Cocos (Victoria)",
   "Cote d'Or",
   "Eden Island",
   "English River",
@@ -65,6 +67,11 @@ const LOCATIONS = [
   {
     name: "Victoria",
     description: "Capital city pickup",
+    image: "/images/victoria.jpg",
+  },
+  {
+    name: "Cat Cocos (Victoria)",
+    description: "Ferry pickup point",
     image: "/images/victoria.jpg",
   },
   {
@@ -139,7 +146,7 @@ export function LocationsSection() {
   }
 
   return (
-    <section ref={sectionRef} id="locations" className="py-20 md:py-28 bg-cream relative">
+    <section ref={sectionRef} id="locations" className="island-paper py-20 md:py-28 bg-cream relative">
       <div className="container mx-auto px-5 md:px-8">
         <div className="text-center mb-14 md:mb-20 max-w-2xl mx-auto">
           <p className="eyebrow text-magenta mb-4">Pickup & drop-off</p>
@@ -147,12 +154,12 @@ export function LocationsSection() {
             We come to you.
           </h2>
           <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
-            These are our four usual meeting points. If somewhere else on Mahé suits you better,
+            These are our usual meeting points. If somewhere else on Mahé suits you better,
             just tell us.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-5 md:gap-6 max-w-6xl mx-auto">
           {LOCATIONS.map((location, index) => (
             <button
               key={location.name}
@@ -167,12 +174,14 @@ export function LocationsSection() {
                   <div className="sticker absolute -top-2 -right-1 px-3.5 py-1.5 text-xs z-10">Most popular</div>
                 )}
                 <div className="arch-image relative aspect-[3/4] shadow-[0_10px_40px_-14px_rgba(13,43,95,0.3)] group-hover:shadow-[0_16px_50px_-14px_rgba(231,44,130,0.35)] transition-shadow duration-500">
-                  <img
+                  <Image
                     src={location.image || "/placeholder.svg"}
                     alt={location.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy/50 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-navy/20" />
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <span className="inline-flex items-center gap-1.5 bg-white text-navy text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">
                       Book pickup here
@@ -241,7 +250,7 @@ export function LocationsSection() {
             >
               Message us on WhatsApp
             </a>{" "}
-            and we'll sort it out.
+            and we&apos;ll sort it out.
           </p>
         </div>
       </div>

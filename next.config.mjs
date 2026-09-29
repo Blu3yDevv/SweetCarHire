@@ -1,15 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Allow verification builds to use a separate directory from a running dev server.
+  distDir: process.env.NEXT_BUILD_DIR || ".next",
   images: {
     unoptimized: true,
   },
  
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 }
 
 export default nextConfig

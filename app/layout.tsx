@@ -23,7 +23,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Sweet Car Hire - Drive Mahé Your Way | Seychelles Car Rental",
   description:
-    "Escape through the sweetness of the island with Sweet Car Hire. Airport delivery, unlimited mileage, no hidden fees. Book your Seychelles car rental today.",
+    "Explore Mahé with Sweet Car Hire. Compare base rental rates, choose airport or local pickup, and send a request for your dates.",
   generator: "v0.app",
   icons: {
     icon: "/favicon.png",

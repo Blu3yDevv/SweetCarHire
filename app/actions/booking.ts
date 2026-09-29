@@ -1,6 +1,6 @@
 "use server"
 
-import { computePrice, type BookingInput as PricingInput } from "@/lib/pricing"
+import { computePrice, type LegacyBookingInput as PricingInput } from "@/lib/pricing"
 
 export interface BookingSubmission {
   // Customer details
@@ -34,7 +34,6 @@ export interface BookingResult {
   pricing?: {
     rentalDays: number
     subtotal: number
-    vat: number
     total: number
   }
 }
@@ -65,9 +64,6 @@ export async function submitBooking(data: BookingSubmission): Promise<BookingRes
       dropoffTime: data.dropoffTime,
       childSeat: data.childSeat,
       additionalDriver: data.additionalDriver,
-      childSeatPerDay: 5,
-      additionalDriverPerDay: 10,
-      vatRate: 0.15,
     }
 
     const pricing = computePrice(pricingInput)
@@ -117,17 +113,16 @@ Drop-off Location: ${dropoffLocation}
 💰 PRICING BREAKDOWN
 ───────────────────────────────────────────────
 Car Rental: €${data.carPricePerDay}/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${data.carPricePerDay * pricing.rentalDays}
-${data.childSeat ? `Child Seat: €5/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${5 * pricing.rentalDays}` : ""}
-${data.additionalDriver ? `Additional Driver: €10/day × ${pricing.rentalDays} day${pricing.rentalDays > 1 ? "s" : ""} = €${10 * pricing.rentalDays}` : ""}
+${data.childSeat ? "Child Seat: €5 (flat fee)" : ""}
+${data.additionalDriver ? "Additional Driver: €10 (flat fee)" : ""}
 
 Subtotal: €${pricing.subtotal}
-VAT (15%): €${pricing.vat}
 ───────────────────────────────────────────────
 TOTAL AMOUNT: €${pricing.total}
 ───────────────────────────────────────────────
 
 ⚠️ ACTION REQUIRED:
-Please contact the customer within 24 hours to confirm booking and arrange payment.
+Please review the request, confirm availability and current terms, and advise whether a deposit is required. Do not treat this request as a confirmed reservation.
 
 Customer Email: ${data.driverEmail}
 Customer WhatsApp: ${data.whatsappNumber}
@@ -168,7 +163,6 @@ Customer WhatsApp: ${data.whatsappNumber}
       pricing: {
         rentalDays: pricing.rentalDays,
         subtotal: pricing.subtotal,
-        vat: pricing.vat,
         total: pricing.total,
       },
     }

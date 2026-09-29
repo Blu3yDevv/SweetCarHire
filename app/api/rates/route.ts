@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-let cache: { t: number; data: any } | null = null
+const cache = new Map<string, { t: number; data: { rates: Record<string, number> } }>()
 const TTL_MS = 12 * 60 * 60 * 1000 // 12 hours
 
 const FALLBACK_RATES = {
@@ -20,49 +20,44 @@ export async function GET(req: Request) {
   const now = Date.now()
 
   // Return cached data if still valid
-  if (cache && now - cache.t < TTL_MS) {
-    return NextResponse.json(cache.data)
+  const cached = cache.get(base)
+  if (cached && now - cached.t < TTL_MS) {
+    return NextResponse.json(cached.data)
   }
 
+  const rates: Record<string, number> = { [base]: 1 }
   const apis = [
-    // Frankfurter.app - Free, no API key, maintained by ECB
-    `https://api.frankfurter.app/latest?from=${base}`,
-    // ExchangeRate-API.com - Free tier, 1500 requests/month
-    `https://open.er-api.com/v6/latest/${base}`,
+    `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}`,
+    `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`,
   ]
 
   for (const apiUrl of apis) {
     try {
-      console.log(`[v0] Fetching exchange rates from ${apiUrl}`)
       const res = await fetch(apiUrl, {
+        signal: AbortSignal.timeout(5000),
         next: { revalidate: TTL_MS / 1000 },
       })
 
-      if (!res.ok) {
-        console.log(`[v0] API returned status ${res.status}, trying next API`)
-        continue
-      }
+      if (!res.ok) continue
 
       const data = await res.json()
-
-      const rates = data.rates || data.conversion_rates || {}
-
-      // Ensure base currency is included
-      if (!rates[base]) {
-        rates[base] = 1
+      const sourceRates = data.rates || data.conversion_rates || {}
+      for (const code of Object.keys(FALLBACK_RATES)) {
+        const rate = sourceRates[code]
+        if (typeof rate === "number" && Number.isFinite(rate) && rate > 0) rates[code] = rate
       }
-
-      const normalizedData = { rates }
-      cache = { t: now, data: normalizedData }
-
-      console.log(`[v0] Successfully fetched exchange rates from ${apiUrl}`)
-      return NextResponse.json(normalizedData)
-    } catch (error) {
-      console.error(`[v0] Failed to fetch from ${apiUrl}:`, error)
-      // Continue to next API
+      // Frankfurter does not publish SCR. Keep checking the second provider until SCR is present.
+      if (rates.SCR) break
+    } catch {
+      // Keep trying another provider; never fail the booking page because rates are unavailable.
     }
   }
 
-  console.log("[v0] All exchange rate APIs failed, using fallback rates")
-  return NextResponse.json({ rates: FALLBACK_RATES }, { status: 200 })
+  // These are clearly estimates used only if providers omit a currency; EUR remains the pricing base.
+  for (const [code, rate] of Object.entries(FALLBACK_RATES)) {
+    if (!(code in rates)) rates[code] = rate
+  }
+  const data = { rates }
+  cache.set(base, { t: now, data })
+  return NextResponse.json(data)
 }

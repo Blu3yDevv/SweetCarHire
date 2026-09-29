@@ -4,6 +4,7 @@ export interface BookingEmailData {
   customerName: string
   customerEmail: string
   customerPhone: string
+  flightNumber?: string
   whatsappNumber?: string // Added WhatsApp number to interface
   carName: string
   carType?: string
@@ -91,12 +92,12 @@ export function generateCustomerConfirmationEmail(booking: BookingEmailData): st
   <div class="container">
     <div class="header">
       <h1>🚗 Sweet Car Hire</h1>
-      <p>Booking Confirmation</p>
+      <p>Booking Request</p>
     </div>
     
     <div class="content">
       <h2 style="color: #1a365d; margin-top: 0;">Thank You, ${booking.customerName}!</h2>
-      <p style="color: #6c757d; font-size: 16px;">Your booking has been confirmed. Here are your reservation details:</p>
+      <p style="color: #6c757d; font-size: 16px;">Your booking request has been submitted. Availability and payment arrangements still need confirmation. Here are your request details:</p>
       
       <div class="alert">
         <strong>📋 Booking Reference: ${booking.bookingId}</strong>
@@ -122,6 +123,7 @@ export function generateCustomerConfirmationEmail(booking: BookingEmailData): st
           <span class="label">Return:</span>
           <span class="value">${formatDate(booking.returnDate)} at ${booking.returnTime}</span>
         </div>
+        ${booking.flightNumber ? `<div class="detail-row"><span class="label">Flight:</span><span class="value">${booking.flightNumber}</span></div>` : ""}
         <div class="detail-row">
           <span class="label">Pickup Location:</span>
           <span class="value">${booking.pickupLocation}</span>
@@ -145,7 +147,7 @@ export function generateCustomerConfirmationEmail(booking: BookingEmailData): st
 
       <div class="total-section">
         <div class="total-row">
-          <span class="total-label">Total Amount:</span>
+          <span class="total-label">Estimated rental charges (insurance excluded):</span>
           <span class="total-value">${formatPrice(pricing.total)}</span>
         </div>
         <div style="margin-top: 10px; opacity: 0.9; font-size: 14px;">
@@ -165,24 +167,19 @@ export function generateCustomerConfirmationEmail(booking: BookingEmailData): st
       }
 
       <div class="alert">
-        <strong>⚠️ Important - Next Steps</strong>
-        <p style="margin: 10px 0 0 0;">Our team will contact you within 24 hours to arrange payment details and confirm your reservation. Please have your booking reference ready.</p>
+        <strong>⚠️ This is a booking request, not a confirmation</strong>
+        <p style="margin: 10px 0 0 0;">The estimate above excludes insurance. Submitting this request does not collect payment or a deposit. Our team will confirm availability, the final price, current insurance and cancellation terms, and whether a deposit is required. Any deposit amount and payment method will be provided for you to review before accepting.</p>
       </div>
 
       <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <strong style="color: #1976d2;">📋 What to Bring:</strong>
-        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #1976d2;">
-          <li>This booking confirmation</li>
-          <li>Valid driver's license</li>
-          <li>Credit card for security deposit</li>
-        </ul>
+        Please wait for written confirmation of the rental terms, any deposit requirement and payment method, and what to bring. This email is not a confirmed reservation.
       </div>
     </div>
 
     <div class="footer">
       <p><strong>Sweet Car Hire</strong></p>
-      <p>Malta's Premier Car Rental Service</p>
-      <p>📧 info@sweetcarhire.com | 📞 +356 1234 5678</p>
+      <p>Sweet Car Hire · Seychelles</p>
+      <p>WhatsApp: +248 2821182</p>
       <p style="margin-top: 15px; font-size: 12px;">
         If you have any questions, please don't hesitate to contact us.
       </p>
@@ -224,7 +221,7 @@ export function generateAdminNotificationEmail(booking: BookingEmailData): strin
     
     <div class="content">
       <div class="alert">
-        <strong>⚠️ Action Required:</strong> Contact customer within 24 hours to arrange payment details.
+        <strong>⚠️ Action Required:</strong> Confirm availability and send the customer the current full quote and terms before accepting the request.
       </div>
 
       <div class="section">
@@ -282,6 +279,7 @@ export function generateAdminNotificationEmail(booking: BookingEmailData): strin
           <span class="label">Return:</span>
           <span class="value">${formatDate(booking.returnDate)} at ${booking.returnTime}</span>
         </div>
+        ${booking.flightNumber ? `<div class="detail-row"><span class="label">Flight:</span><span class="value">${booking.flightNumber}</span></div>` : ""}
         <div class="detail-row">
           <span class="label">Pickup Location:</span>
           <span class="value">${booking.pickupLocation}</span>
@@ -306,7 +304,7 @@ export function generateAdminNotificationEmail(booking: BookingEmailData): strin
       <div class="section" style="background: #1a365d; color: white; border-left: none;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div style="font-size: 14px; opacity: 0.8; margin-bottom: 5px;">Total Amount</div>
+            <div style="font-size: 14px; opacity: 0.8; margin-bottom: 5px;">Estimated rental charges · insurance excluded</div>
             <div style="font-size: 32px; font-weight: bold;">${formatPrice(pricing.total)}</div>
           </div>
           <div style="text-align: right; opacity: 0.9;">

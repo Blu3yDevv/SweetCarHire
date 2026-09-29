@@ -55,8 +55,8 @@ export function generateVoucherHtml(voucher: VoucherData) {
     voucher.nextSteps && voucher.nextSteps.length > 0
       ? voucher.nextSteps
       : [
-          "Our team will contact you within 24 hours to arrange payment details.",
-          "Bring this voucher and a valid driver's license when collecting the vehicle.",
+          "Our team will confirm availability, current insurance and cancellation terms, and the final price. This request is not a confirmed reservation.",
+          "Wait for the team's written confirmation and pickup instructions before travelling.",
           "Contact us on WhatsApp at +248 2821182 if any details need to change.",
         ]
 
@@ -65,7 +65,7 @@ export function generateVoucherHtml(voucher: VoucherData) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sweet Car Hire - Booking Voucher</title>
+  <title>Sweet Car Hire - Booking Request Summary</title>
   <style>
     @page { size: A4; margin: 16mm; }
     * { box-sizing: border-box; }
@@ -330,7 +330,7 @@ export function generateVoucherHtml(voucher: VoucherData) {
       </header>
 
       <div class="status-bar">
-        <span>Booking received and awaiting final payment confirmation</span>
+        <span>Request received · awaiting availability and final quote</span>
         <span class="status-pill">${escapeHtml(voucher.currency || "Selected currency")}</span>
       </div>
 
@@ -351,12 +351,12 @@ export function generateVoucherHtml(voucher: VoucherData) {
             ${renderPriceRows(voucher.pricing)}
             <div class="total-box">
               <div>
-                <div class="total-label">Total amount</div>
-                <div>Payable as arranged with Sweet Car Hire</div>
+                <div class="total-label">Estimated rental charges · insurance excluded</div>
+                <div>Final price and applicable terms will be confirmed by the team</div>
               </div>
               <div class="total-value">${escapeHtml(voucher.total)}</div>
             </div>
-            <div class="fee-note">${escapeHtml(voucher.lateFeeNote || "Late returns may incur an additional fee.")}</div>
+            <div class="fee-note">${escapeHtml(voucher.lateFeeNote || "Insurance is excluded from this estimate. Confirm the final price and terms with the team before accepting.")}</div>
           </section>
 
           <section class="section full">
@@ -374,7 +374,7 @@ export function generateVoucherHtml(voucher: VoucherData) {
           Seychelles premium car rental service
         </div>
         <div>
-          info@sweetcarhire.com<br>
+          sweetcarhirebooking@gmail.com<br>
           +248 2821182
         </div>
       </footer>

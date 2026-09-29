@@ -27,7 +27,7 @@ export function AboutSection() {
   }, [])
 
   return (
-    <section ref={sectionRef} id="about" className="py-20 md:py-28 bg-white relative overflow-hidden">
+    <section ref={sectionRef} id="about" className="island-paper py-20 md:py-28 bg-white relative overflow-hidden">
       <div className="container mx-auto px-5 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 md:gap-20 items-center max-w-6xl mx-auto">
           {/* Photo */}

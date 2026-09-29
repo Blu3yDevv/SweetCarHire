@@ -12,20 +12,12 @@ const SERVICES = [
     description: "There is no distance limit on any rental. Drive as much of the island as you like.",
   },
   {
-    title: "Full insurance",
-    description: "Comprehensive cover is included as standard with every booking.",
-  },
-  {
     title: "24/7 support",
     description: "You can reach a real local person on the phone at any hour of your rental.",
   },
   {
     title: "WhatsApp booking",
     description: "Book and get your questions answered over WhatsApp, usually within minutes.",
-  },
-  {
-    title: "No hidden fees",
-    description: "The price you see when you book is the price you pay. Nothing gets added later.",
   },
 ]
 
@@ -46,10 +38,6 @@ export function ServicesSection() {
 
   return (
     <section ref={sectionRef} id="services" className="py-20 md:py-28 bg-navy relative overflow-hidden">
-      {/* Soft glows */}
-      <div className="absolute -top-40 right-[-10%] w-[500px] h-[500px] bg-magenta/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-40 left-[-10%] w-[500px] h-[500px] bg-pink/10 rounded-full blur-[140px] pointer-events-none" />
-
       <div className="container mx-auto px-5 md:px-8 relative z-10">
         <div className="max-w-2xl mb-14 md:mb-20">
           <p className="eyebrow text-pink mb-4">Why choose us</p>

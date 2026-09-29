@@ -11,6 +11,7 @@ export default function BookingSuccessPage() {
   const bookingId = searchParams.get("bookingId")
   const [booking, setBooking] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
   const { format: formatPrice, currency } = useCurrency()
 
   useEffect(() => {
@@ -19,22 +20,15 @@ export default function BookingSuccessPage() {
       return
     }
 
-    const fetchBooking = async () => {
-      try {
-        const response = await fetch(`/api/bookings/${bookingId}`)
-        if (!response.ok) {
-          throw new Error("Booking not found")
-        }
-        const data = await response.json()
-        setBooking(data.booking)
-      } catch (err) {
-        console.error("[Fetch Booking Error]:", err)
-      } finally {
-        setLoading(false)
-      }
+    try {
+      const request = sessionStorage.getItem(`sch-request:${bookingId}`)
+      if (!request) throw new Error("Request details are only available in the browser session used to submit the request. Check your email or contact the team for help.")
+      setBooking(JSON.parse(request))
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Request details are not available in this browser session.")
+    } finally {
+      setLoading(false)
     }
-
-    fetchBooking()
   }, [bookingId])
 
   const formatDate = (dateString: string) => {
@@ -50,7 +44,7 @@ export default function BookingSuccessPage() {
   const downloadPDF = () => {
     if (!booking) return
 
-    const reference = `SCH-${booking.id.slice(0, 8).toUpperCase()}`
+    const reference = booking.id
 
     const voucherHTML = generateVoucherHtml({
       reference,
@@ -64,6 +58,7 @@ export default function BookingSuccessPage() {
         { label: "Name", value: booking.customerName },
         { label: "Email", value: booking.customerEmail },
         { label: "Phone", value: booking.customerPhone },
+        { label: "Flight", value: booking.flightNumber },
       ],
       rental: [
         { label: "Vehicle", value: booking.carName },
@@ -75,20 +70,18 @@ export default function BookingSuccessPage() {
         { label: "Currency", value: currency },
       ],
       pricing: [
-        ...(booking.extras || []).map((extra: any) => ({
-          label: extra.name,
-          value: formatAmount(extra.price * 100),
-        })),
+        ...(booking.childSeat ? [{ label: "Child seat", value: formatPrice(5) }] : []),
+        ...(booking.additionalDriver ? [{ label: "Additional driver", value: formatPrice(10) }] : []),
       ],
       total: formatAmount(booking.totalAmountMinor),
-      lateFeeNote: `Late returns may incur a fee of ${formatPrice(10)}.`,
+      lateFeeNote: "Rental estimate only: insurance is excluded. Confirm the final price and terms with the team before accepting.",
     })
 
     const blob = new Blob([voucherHTML], { type: "text/html" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = `Sweet-Car-Hire-Voucher-${reference}.html`
+    link.download = `Sweet-Car-Hire-Request-Summary-${reference}.html`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -100,7 +93,7 @@ export default function BookingSuccessPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 pt-24 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-magenta mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading confirmation...</p>
+          <p className="text-gray-600">Loading request details...</p>
         </div>
       </div>
     )
@@ -111,7 +104,7 @@ export default function BookingSuccessPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 pt-24">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
-            <p className="text-gray-600">Booking not found</p>
+          <p className="text-gray-600">{loadError || "Request details are not available in this browser session."}</p>
             <a href="/" className="text-magenta hover:underline mt-4 inline-block">
               Return to Homepage
             </a>
@@ -121,7 +114,7 @@ export default function BookingSuccessPage() {
     )
   }
 
-  const reference = `SCH-${booking.id.slice(0, 8).toUpperCase()}`
+  const reference = booking.id
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 pt-24 pb-12">
@@ -130,13 +123,13 @@ export default function BookingSuccessPage() {
           <div className="bg-gradient-to-r from-navy to-magenta rounded-3xl shadow-2xl p-8 md:p-12 text-center text-white mb-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
             <div className="relative z-10">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-bounce">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg ">
                 <Check className="w-12 h-12 text-green-600" strokeWidth={3} />
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Booking Confirmed!</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Request submitted</h1>
               <p className="text-xl text-white/90 mb-8 max-w-xl mx-auto text-balance">
-                Your reservation has been successfully submitted. Get ready for an amazing journey!
+                Your request has been received. This does not confirm a reservation or collect payment or a deposit.
               </p>
 
               <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 inline-block">
@@ -197,7 +190,7 @@ export default function BookingSuccessPage() {
                 </div>
                 <div>
                   <p className="text-gray-600">Return</p>
-                  <p className="font-semibold text-navy">{booking.returnLocation}</p>
+                    <p className="font-semibold text-navy">{booking.returnLocation}</p>
                 </div>
               </div>
             </div>
@@ -225,8 +218,9 @@ export default function BookingSuccessPage() {
           <div className="bg-gradient-to-r from-navy to-navy/90 rounded-2xl shadow-lg p-6 mb-6 text-white">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-white/80 text-sm uppercase tracking-wider mb-1">Total Amount</p>
+                <p className="text-white/80 text-sm uppercase tracking-wider mb-1">Estimated rental charges · insurance excluded</p>
                 <p className="text-4xl font-bold">{formatAmount(booking.totalAmountMinor)}</p>
+                <p className="mt-3 text-sm text-white/80">This request is not a confirmed reservation. The team will confirm availability, final price, and current insurance and cancellation terms.</p>
               </div>
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                 <span className="text-3xl">💳</span>
@@ -244,15 +238,15 @@ export default function BookingSuccessPage() {
                 <div className="space-y-3 text-sm text-orange-800">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <p>Booking confirmed and confirmation email sent to {booking.customerEmail}</p>
+                    <p>Your request is awaiting confirmation. Contact us if you have not received an email.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <ArrowRight className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                    <p>Our team will contact you within 24 hours to arrange payment details</p>
+                    <p>Our team will confirm availability and whether a deposit is required. Any amount and payment method will be shared for you to review before accepting.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <ArrowRight className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                    <p>Bring your booking reference and valid driver's license for pickup</p>
+                    <p>Wait for the team&apos;s written confirmation and instructions before pickup</p>
                   </div>
                 </div>
               </div>
@@ -265,7 +259,7 @@ export default function BookingSuccessPage() {
               className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-magenta to-pink-600 hover:from-magenta/90 hover:to-pink-600/90 text-white rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold"
             >
               <Download className="w-5 h-5" />
-              Download Voucher
+              Download Request Summary
             </button>
             <a
               href="/"

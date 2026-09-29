@@ -52,7 +52,7 @@ function ReviewCard({ review, compact = false }: { review: (typeof REVIEWS_DATA)
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_10px_50px_-18px_rgba(13,43,95,0.25)] relative h-full">
       <span className="display-heading text-magenta/20 text-7xl absolute top-2 left-5 select-none" aria-hidden="true">
-        "
+        &quot;
       </span>
 
       <div className="relative">
@@ -95,7 +95,7 @@ export function ReviewsSection() {
   }
 
   return (
-    <section className="py-20 md:py-28 bg-cream overflow-hidden relative">
+    <section className="island-paper py-20 md:py-28 bg-cream overflow-hidden relative">
       <div className="container mx-auto px-5 md:px-8 relative">
         <div className="text-center mb-12 md:mb-16 max-w-2xl mx-auto">
           <p className="eyebrow text-magenta mb-4">Testimonials</p>
