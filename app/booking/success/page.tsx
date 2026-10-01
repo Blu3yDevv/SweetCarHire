@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Check, Download, Calendar, Car, MapPin, Phone, Mail, ArrowRight } from "lucide-react"
 import { generateVoucherHtml } from "@/lib/voucher-template"
 import { useCurrency } from "@/lib/currency"
@@ -105,9 +106,9 @@ export default function BookingSuccessPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
           <p className="text-gray-600">{loadError || "Request details are not available in this browser session."}</p>
-            <a href="/" className="text-magenta hover:underline mt-4 inline-block">
+            <Link href="/" className="text-magenta hover:underline mt-4 inline-block">
               Return to Homepage
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -261,12 +262,12 @@ export default function BookingSuccessPage() {
               <Download className="w-5 h-5" />
               Download Request Summary
             </button>
-            <a
+            <Link
               href="/"
               className="flex-1 flex items-center justify-center gap-3 px-8 py-4 border-2 border-navy text-navy hover:bg-navy hover:text-white rounded-xl transition-all font-semibold"
             >
               Return to Homepage
-            </a>
+            </Link>
           </div>
         </div>
       </div>

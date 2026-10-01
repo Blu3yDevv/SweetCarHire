@@ -441,9 +441,9 @@ export default function BookingFlow({ searchParams }: { searchParams: Record<str
                 </button>
               </div>
               <div className="mt-8 pt-6 border-t">
-                <a href="/" className="text-magenta hover:underline font-medium">
+                <Link href="/" className="text-magenta hover:underline font-medium">
                   ← Return to Homepage
-                </a>
+                </Link>
               </div>
             </div>
           </div>
