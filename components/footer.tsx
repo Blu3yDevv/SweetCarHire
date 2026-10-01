@@ -114,7 +114,15 @@ export function Footer() {
         <div className="border-t border-white/10 py-7">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             <p className="text-white/50 text-sm">© {currentYear} Sweet Car Hire. All rights reserved.</p>
-            <p className="text-white/40 text-sm italic">Escape through the sweetness of the island</p>
+            <div className="flex flex-col sm:flex-row items-center gap-x-5 gap-y-2 text-sm">
+              <p className="text-white/40 italic">Escape through the sweetness of the island</p>
+              <a
+                href="mailto:blu3ydev@gmail.com"
+                className="text-white/50 hover:text-white transition-colors"
+              >
+                Site crafted by Blu3yDevv
+              </a>
+            </div>
           </div>
         </div>
       </div>
