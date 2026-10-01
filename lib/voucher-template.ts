@@ -55,9 +55,9 @@ export function generateVoucherHtml(voucher: VoucherData) {
     voucher.nextSteps && voucher.nextSteps.length > 0
       ? voucher.nextSteps
       : [
-          "Our team will confirm availability, current insurance and cancellation terms, and the final price. This request is not a confirmed reservation.",
-          "Wait for the team's written confirmation and pickup instructions before travelling.",
-          "Contact us on WhatsApp at +248 2821182 if any details need to change.",
+          "The team will confirm availability, the final price, and the applicable rental terms.",
+          "Any deposit or payment arrangements will be shared separately by the team.",
+          "Wait for written confirmation and pickup instructions before travelling.",
         ]
 
   return `<!DOCTYPE html>
@@ -65,273 +65,249 @@ export function generateVoucherHtml(voucher: VoucherData) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sweet Car Hire - Booking Request Summary</title>
+  <meta name="color-scheme" content="light">
+  <title>Request summary ${escapeHtml(voucher.reference)} | Sweet Car Hire</title>
   <style>
-    @page { size: A4; margin: 16mm; }
+    :root {
+      color-scheme: light;
+      --navy: #123064;
+      --ink: #263246;
+      --muted: #687487;
+      --line: #e4e8ee;
+      --paper: #ffffff;
+      --canvas: #f1f3f6;
+      --pink: #e72c82;
+      --pink-soft: #fff3f8;
+      --notice: #fbf8ef;
+    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: #fdf8f3;
-      color: #1f2937;
-      font-family: "Segoe UI", Arial, sans-serif;
-      line-height: 1.45;
+      padding: 28px 16px;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    .page {
-      max-width: 840px;
-      margin: 28px auto;
-      padding: 0 16px;
+    .page { width: 100%; max-width: 820px; margin: 0 auto; }
+    .actions { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+    .print-button {
+      appearance: none;
+      border: 1px solid var(--navy);
+      border-radius: 6px;
+      background: var(--navy);
+      color: #fff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      padding: 9px 14px;
+      cursor: pointer;
     }
-    .voucher {
-      background: #fffdf9;
-      border: 1px solid #eadfd4;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 22px 60px rgba(231, 44, 130, 0.12);
+    .print-button:hover { background: #1c427e; }
+    .document {
+      background: var(--paper);
+      border: 1px solid #e2e5e9;
+      border-top: 4px solid var(--pink);
+      box-shadow: 0 12px 36px rgba(22, 39, 67, .08);
     }
     .header {
-      padding: 34px;
-      background: linear-gradient(135deg, #e72c82 0%, #ff6ea8 100%);
-      color: #ffffff;
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 24px;
-      align-items: flex-start;
+      padding: 30px 36px 26px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--pink);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .15em;
+      text-transform: uppercase;
     }
     .brand {
-      font-size: 28px;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0;
-      margin: 0 0 8px;
-    }
-    .subtitle {
-      color: rgba(255, 255, 255, 0.82);
-      font-size: 14px;
       margin: 0;
+      color: var(--navy);
+      font-size: 25px;
+      font-weight: 760;
+      letter-spacing: -.035em;
+      line-height: 1.2;
     }
-    .reference-card {
-      min-width: 235px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 18px;
-      padding: 16px;
-      text-align: right;
-      backdrop-filter: blur(18px);
-    }
-    .reference-label {
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 11px;
+    .tagline { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .reference { min-width: 185px; text-align: right; }
+    .reference-label, .issued-label {
+      color: var(--muted);
+      font-size: 10px;
       font-weight: 700;
+      letter-spacing: .09em;
       text-transform: uppercase;
-      margin-bottom: 6px;
     }
-    .reference {
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      word-break: break-word;
+    .reference-value {
+      margin: 3px 0 5px;
+      color: var(--navy);
+      font-size: 18px;
+      font-weight: 750;
+      letter-spacing: .02em;
+      overflow-wrap: anywhere;
     }
-    .issued {
-      color: rgba(255, 255, 255, 0.72);
+    .issued { color: var(--muted); font-size: 12px; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 36px;
+      background: var(--pink-soft);
+      border-bottom: 1px solid #f4d5e3;
+      color: #74234a;
       font-size: 12px;
+      font-weight: 650;
     }
-    .status-bar {
-      background: #fff6fb;
-      border-bottom: 1px solid #f3cadb;
-      padding: 14px 34px;
-      color: #e72c82;
-      font-weight: 700;
+    .status-mark {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: var(--pink);
+    }
+    .content { padding: 26px 36px 30px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; }
+    .section { min-width: 0; }
+    .section.full { grid-column: 1 / -1; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 750;
+    }
+    .section-title::before {
+      width: 3px;
+      height: 15px;
+      border-radius: 2px;
+      background: var(--pink);
+      content: "";
+    }
+    .detail-row, .price-row {
       display: flex;
       justify-content: space-between;
       gap: 16px;
-      align-items: center;
-    }
-    .status-pill {
-      background: #e72c82;
-      border: 1px solid #e72c82;
-      border-radius: 999px;
-      padding: 6px 12px;
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
       font-size: 12px;
-      color: #ffffff;
-      white-space: nowrap;
     }
-    .content {
-      padding: 30px 34px 34px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-    .section {
-      border: 1px solid #eadfd4;
-      border-radius: 20px;
-      padding: 20px;
-      background: #ffffff;
-      box-shadow: 0 10px 30px rgba(231, 44, 130, 0.06);
-    }
-    .section.full {
-      grid-column: 1 / -1;
-    }
-    .section-title {
-      margin: 0 0 14px;
-      color: #e72c82;
-      font-size: 15px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0;
-    }
-    .detail-row,
-    .price-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 10px 0;
-      border-top: 1px solid #f0e7df;
-      font-size: 14px;
-    }
-    .detail-row:first-of-type,
-    .price-row:first-of-type {
-      border-top: 0;
-      padding-top: 0;
-    }
-    .detail-label,
-    .price-row span {
-      color: #657184;
-    }
-    .detail-value,
-    .price-row strong {
-      color: #1f2937;
-      font-weight: 700;
+    .detail-label, .price-row span { color: var(--muted); }
+    .detail-value, .price-row strong {
+      color: var(--ink);
+      font-weight: 650;
       text-align: right;
       overflow-wrap: anywhere;
     }
-    .total-box {
-      margin-top: 18px;
-      background: linear-gradient(135deg, #e72c82 0%, #ff6ea8 100%);
-      color: #ffffff;
-      border-radius: 18px;
-      padding: 20px 22px;
+    .price-row { padding: 9px 0; }
+    .total {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 18px;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 8px;
+      padding: 14px 0 0;
+      border-top: 1px solid #cbd3df;
     }
-    .total-label {
-      color: rgba(255,255,255,0.78);
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 700;
+    .total-label { color: var(--navy); font-size: 12px; font-weight: 700; }
+    .total-value { color: var(--navy); font-size: 22px; font-weight: 760; }
+    .note {
+      margin: 13px 0 0;
+      padding: 11px 13px;
+      border-left: 3px solid #d9b863;
+      background: var(--notice);
+      color: #5d533d;
+      font-size: 11px;
+      line-height: 1.55;
     }
-    .total-value {
-      font-size: 30px;
-      font-weight: 800;
-      text-align: right;
-    }
-    .fee-note {
-      margin-top: 14px;
-      background: #fff8d8;
-      border: 1px solid #f7d21c;
-      color: #5f4a00;
-      border-radius: 16px;
-      padding: 13px 15px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-    .steps {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
+    .steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
     .steps li {
-      border-top: 1px solid #f0e7df;
-      padding: 10px 0 10px 28px;
       position: relative;
-      color: #38465a;
-      font-size: 14px;
-    }
-    .steps li:first-child { border-top: 0; padding-top: 0; }
-    .steps li:before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #e72c82;
-      position: absolute;
-      left: 6px;
-      top: 17px;
-    }
-    .steps li:first-child:before { top: 7px; }
-    .footer {
-      border-top: 1px solid #eadfd4;
-      padding: 18px 34px 24px;
-      color: #657184;
+      padding: 8px 0 8px 29px;
+      border-top: 1px solid var(--line);
+      color: var(--ink);
       font-size: 12px;
+      counter-increment: step;
+    }
+    .steps li::before {
+      position: absolute;
+      left: 0;
+      top: 8px;
+      color: var(--pink);
+      font-size: 11px;
+      font-weight: 750;
+      content: counter(step, decimal-leading-zero);
+    }
+    .footer {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
+      gap: 20px;
+      padding: 16px 36px 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
     }
-    .footer strong {
-      color: #e72c82;
-    }
-    @media (max-width: 680px) {
-      .page { margin: 0; padding: 0; }
-      .voucher { border-radius: 0; border-left: 0; border-right: 0; }
-      .header,
-      .status-bar,
-      .footer {
-        flex-direction: column;
-        text-align: left;
-        align-items: stretch;
-      }
-      .reference-card { min-width: 0; text-align: left; }
-      .content { padding: 24px 18px; }
-      .header,
-      .status-bar,
-      .footer { padding-left: 18px; padding-right: 18px; }
-      .grid { grid-template-columns: 1fr; }
+    .footer strong { color: var(--navy); font-size: 11px; }
+    .contact { text-align: right; }
+    @media (max-width: 620px) {
+      body { padding: 0; background: var(--paper); }
+      .actions { padding: 12px 16px 0; }
+      .document { border-right: 0; border-left: 0; box-shadow: none; }
+      .header { flex-direction: column; gap: 16px; padding: 24px 20px; }
+      .reference { min-width: 0; text-align: left; }
+      .status { padding: 12px 20px; }
+      .content { padding: 22px 20px 26px; }
+      .grid { grid-template-columns: 1fr; gap: 21px; }
       .section.full { grid-column: auto; }
-      .detail-row,
-      .price-row,
-      .total-box {
-        flex-direction: column;
-        gap: 4px;
-      }
-      .detail-value,
-      .price-row strong,
-      .total-value {
-        text-align: left;
-      }
+      .footer { padding: 16px 20px 20px; }
     }
+    @page { size: A4; margin: 14mm; }
     @media print {
-      body { background: #ffffff; }
-      .page { max-width: none; margin: 0; padding: 0; }
-      .voucher { box-shadow: none; border-radius: 0; }
-      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .total-box, .status-pill, .fee-note { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { padding: 0; background: #fff; font-size: 11px; }
+      .page { max-width: none; }
+      .actions { display: none; }
+      .document { border: 0; border-top: 3px solid var(--pink); box-shadow: none; }
+      .header { padding: 18px 22px 16px; }
+      .status { padding: 9px 22px; }
+      .content { padding: 18px 22px 20px; }
+      .grid { gap: 15px 24px; }
+      .section, .total, .note, .steps li { break-inside: avoid; }
+      .footer { padding: 12px 22px 14px; }
+      .status, .status-mark, .section-title::before, .note {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <article class="voucher">
+    <div class="actions">
+      <button class="print-button" type="button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+    <article class="document">
       <header class="header">
         <div>
+          <p class="eyebrow">Rental request summary</p>
           <h1 class="brand">Sweet Car Hire</h1>
-          <p class="subtitle">Drive Mahe your way</p>
+          <p class="tagline">Mahé, Seychelles</p>
         </div>
-        <div class="reference-card">
-          <div class="reference-label">Booking reference</div>
-          <div class="reference">${escapeHtml(voucher.reference)}</div>
-          <div class="issued">Issued ${escapeHtml(voucher.issuedDate)}</div>
+        <div class="reference">
+          <div class="reference-label">Request reference</div>
+          <div class="reference-value">${escapeHtml(voucher.reference)}</div>
+          <div class="issued"><span class="issued-label">Prepared</span> &nbsp;${escapeHtml(voucher.issuedDate)}</div>
         </div>
       </header>
 
-      <div class="status-bar">
-        <span>Request received · awaiting availability and final quote</span>
-        <span class="status-pill">${escapeHtml(voucher.currency || "Selected currency")}</span>
+      <div class="status">
+        <span class="status-mark" aria-hidden="true"></span>
+        <span>Request received · awaiting availability confirmation</span>
       </div>
 
       <section class="content">
@@ -342,28 +318,25 @@ export function generateVoucherHtml(voucher: VoucherData) {
           </section>
 
           <section class="section">
-            <h2 class="section-title">Rental Details</h2>
+            <h2 class="section-title">Rental details</h2>
             ${renderRows(voucher.rental)}
           </section>
 
           <section class="section full">
-            <h2 class="section-title">Price Summary</h2>
+            <h2 class="section-title">Estimated price</h2>
             ${renderPriceRows(voucher.pricing)}
-            <div class="total-box">
-              <div>
-                <div class="total-label">Estimated rental charges · insurance excluded</div>
-                <div>Final price and applicable terms will be confirmed by the team</div>
-              </div>
-              <div class="total-value">${escapeHtml(voucher.total)}</div>
+            <div class="total">
+              <span class="total-label">Estimated rental charges</span>
+              <strong class="total-value">${escapeHtml(voucher.total)}</strong>
             </div>
-            <div class="fee-note">${escapeHtml(voucher.lateFeeNote || "Insurance is excluded from this estimate. Confirm the final price and terms with the team before accepting.")}</div>
+            <p class="note">${escapeHtml(voucher.lateFeeNote || "Estimate only. Insurance is not included. The team will confirm availability, the final price, and applicable rental terms before the reservation is confirmed.")}</p>
           </section>
 
           <section class="section full">
-            <h2 class="section-title">Next Steps</h2>
-            <ul class="steps">
+            <h2 class="section-title">What happens next</h2>
+            <ol class="steps">
               ${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
-            </ul>
+            </ol>
           </section>
         </div>
       </section>
@@ -371,11 +344,11 @@ export function generateVoucherHtml(voucher: VoucherData) {
       <footer class="footer">
         <div>
           <strong>Sweet Car Hire</strong><br>
-          Seychelles premium car rental service
+          Keep this summary with your travel details.
         </div>
-        <div>
+        <div class="contact">
           sweetcarhirebooking@gmail.com<br>
-          +248 2821182
+          +248 282 1182
         </div>
       </footer>
     </article>
